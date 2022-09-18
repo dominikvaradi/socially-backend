@@ -5,10 +5,13 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
+    <property name="uuid_type" value="uuid" dbms="postgresql"/>
+    <property name="uuid_type" value="uniqueidentifier" dbms="mssql"/>
+    <property name="uuid_type" value="RAW(16)" dbms="oracle"/>
+
     <property name="uuid_generate" value="uuid_generate_v4()" dbms="postgresql"/>
     <property name="uuid_generate" value="NEWID()" dbms="mssql"/>
     <property name="uuid_generate" value="sys_guid()" dbms="oracle"/>
-    <property name="uuid_generate" value="RANDOM_UUID()" dbms="h2"/>
 
     <changeSet author="dominikvaradi" id="schema-init">
         <createTable tableName="users">
@@ -16,7 +19,7 @@
                 <constraints nullable="false" unique="true" primaryKey="true" primaryKeyName="users_id_pk"/>
             </column>
 
-            <column name="public_id" type="uuid" defaultValueComputed="${uuid_generate}">
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
                 <constraints nullable="false" unique="true" uniqueConstraintName="users_public_id_uc"/>
             </column>
 
@@ -32,16 +35,16 @@
                 <constraints nullable="false"/>
             </column>
 
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="users_email_uc"/>
+            </column>
+
             <column name="first_name" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
 
             <column name="last_name" type="varchar(255)">
                 <constraints nullable="false"/>
-            </column>
-
-            <column name="email" type="varchar(255)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="users_email_uc"/>
             </column>
 
             <column name="password" type="varchar(255)"/>

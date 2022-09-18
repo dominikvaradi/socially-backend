@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.Hibernate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,19 +18,19 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Table(name = "users")
 @Entity
+@Table(name = "users")
 public class User extends BaseDomain {
-	@Column(name = "first_name")
-	private String firstName;
-
-	@Column(name = "last_name")
-	private String lastName;
-
-	@Column(name = "email")
+	@Column(name = "email", nullable = false, unique = true)
 	private String email;
 
-	@Column(name = "email")
+	@Column(name = "first_name", nullable = false)
+	private String firstName;
+
+	@Column(name = "last_name", nullable = false)
+	private String lastName;
+
+	@Column(name = "password")
 	private String password;
 
 	@Override
@@ -38,22 +39,16 @@ public class User extends BaseDomain {
 			return true;
 		}
 
-		if (o == null || getClass() != o.getClass()) {
+		if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
 			return false;
 		}
-
+		
 		User user = (User) o;
-		return Objects.equals(this.getId(), user.getId())
-				&& Objects.equals(this.getPublicId(), user.getPublicId())
-				&& Objects.equals(this.getVersion(), user.getVersion())
-				&& Objects.equals(firstName, user.firstName)
-				&& Objects.equals(lastName, user.lastName)
-				&& Objects.equals(email, user.email)
-				&& Objects.equals(password, user.password);
+		return getId() != null && Objects.equals(getId(), user.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getId(), getPublicId(), getVersion(), firstName, lastName, email, password);
+		return getClass().hashCode();
 	}
 }
