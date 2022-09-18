@@ -13,6 +13,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -30,4 +31,23 @@ public class CommentReaction extends BaseDomain {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "reaction", nullable = false)
 	private Reaction reaction;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+
+		CommentReaction other = (CommentReaction) o;
+		return getId() != null && Objects.equals(getId(), other.getId());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getId());
+	}
 }
