@@ -5,4 +5,49 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
+    <property name="uuid_type" value="uuid" dbms="postgresql"/>
+    <property name="uuid_type" value="uniqueidentifier" dbms="mssql"/>
+    <property name="uuid_type" value="RAW(16)" dbms="oracle"/>
+
+    <property name="uuid_generate" value="uuid_generate_v4()" dbms="postgresql"/>
+    <property name="uuid_generate" value="NEWID()" dbms="mssql"/>
+    <property name="uuid_generate" value="sys_guid()" dbms="oracle"/>
+
+    <changeSet author="dominikvaradi" id="schema-init">
+        <createTable tableName="users">
+            <column name="id" type="bigint">
+                <constraints nullable="false" unique="true" primaryKey="true" primaryKeyName="users_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false" unique="true" uniqueConstraintName="users_public_id_uc"/>
+            </column>
+
+            <column name="version" type="BIGINT" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="users_email_uc"/>
+            </column>
+
+            <column name="first_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="last_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="password" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>
