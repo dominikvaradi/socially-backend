@@ -42,13 +42,13 @@ public class User extends BaseDomain {
 		if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
 			return false;
 		}
-		
-		User user = (User) o;
-		return getId() != null && Objects.equals(getId(), user.getId());
+
+		User other = (User) o;
+		return getId() != null && Objects.equals(getId(), other.getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return getClass().hashCode();
+		return Objects.hash(getId());
 	}
 }

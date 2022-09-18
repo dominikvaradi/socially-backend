@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="3-backend-data-access-layer-setup" author="dominikvaradi">
+        <createTable tableName="friendships">
+            <column name="id" type="bigint">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="friendships_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="friendships_public_id_uc"/>
+            </column>
+
+            <column name="version" type="bigint" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="requester_user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="friendships_requester_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="addressee_user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="friendships_addressee_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="last_status_modifier_user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="friendships_last_status_modifier_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status_last_modified" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="posts">
+            <column name="id" type="bigint">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="posts_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="posts_public_id_uc"/>
+            </column>
+
+            <column name="version" type="bigint" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="header" type="varchar(255)"/>
+
+            <column name="content" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="author_user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="posts_author_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="addressee_user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="posts_addressee_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="post_reactions">
+            <column name="id" type="bigint">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="post_reactions_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="post_reactions_public_id_uc"/>
+            </column>
+
+            <column name="version" type="bigint" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="post_reactions_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="post_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="post_reactions_post_id_fk"
+                             referencedTableName="posts"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="reaction" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="comments">
+            <column name="id" type="bigint">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="comments_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="comments_public_id_uc"/>
+            </column>
+
+            <column name="version" type="bigint" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="content" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="comments_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="post_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="comments_post_id_fk"
+                             referencedTableName="posts"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="comment_reactions">
+            <column name="id" type="bigint">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="comment_reactions_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="comment_reactions_public_id_uc"/>
+            </column>
+
+            <column name="version" type="bigint" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="comment_reactions_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="comment_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="comment_reactions_comment_id_fk"
+                             referencedTableName="comments"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="reaction" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
