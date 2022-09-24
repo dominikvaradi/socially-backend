@@ -3,6 +3,7 @@ package hu.dominikvaradi.sociallybackend.flows.user.domain;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,10 +18,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 @Entity
 @Table(name = "users")

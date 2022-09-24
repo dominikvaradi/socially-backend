@@ -4,6 +4,7 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
