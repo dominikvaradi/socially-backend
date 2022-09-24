@@ -1,7 +1,7 @@
-package hu.dominikvaradi.sociallybackend.flows.comments.domain;
+package hu.dominikvaradi.sociallybackend.flows.comment.domain;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
-import hu.dominikvaradi.sociallybackend.flows.posts.domain.Post;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,9 +16,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -41,7 +41,7 @@ public class Comment extends BaseDomain {
 
 	@ToString.Exclude
 	@OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<CommentReaction> reactions = new ArrayList<>();
+	private Set<CommentReaction> reactions = new HashSet<>();
 
 	@Override
 	public boolean equals(Object o) {

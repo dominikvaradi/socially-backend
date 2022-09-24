@@ -1,13 +1,14 @@
-package hu.dominikvaradi.sociallybackend.flows.posts.domain;
+package hu.dominikvaradi.sociallybackend.flows.message.domain;
 
-import hu.dominikvaradi.sociallybackend.flows.comments.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.Hibernate;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,9 +17,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -26,29 +27,22 @@ import java.util.Objects;
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name = "posts")
-public class Post extends BaseDomain {
-	@Column(name = "header")
-	private String header;
-
+@Table(name = "messages")
+public class Message extends BaseDomain {
 	@Column(name = "content", nullable = false)
 	private String content;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "author_user_id", nullable = false)
-	private User author;
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "addressee_user_id", nullable = false)
-	private User addressee;
+	@JoinColumn(name = "conversation_id", nullable = false)
+	private Conversation conversation;
 
 	@ToString.Exclude
-	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<PostReaction> reactions = new ArrayList<>();
-
-	@ToString.Exclude
-	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Comment> comments = new ArrayList<>();
+	@OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<MessageReaction> reactions = new HashSet<>();
 
 	@Override
 	public boolean equals(Object o) {
@@ -56,11 +50,11 @@ public class Post extends BaseDomain {
 			return true;
 		}
 
-		if (o == null || getClass() != o.getClass()) {
+		if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
 			return false;
 		}
 
-		Post other = (Post) o;
+		Message other = (Message) o;
 		return getId() != null && Objects.equals(getId(), other.getId());
 	}
 

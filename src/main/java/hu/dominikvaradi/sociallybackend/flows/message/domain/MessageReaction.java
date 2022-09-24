@@ -1,4 +1,4 @@
-package hu.dominikvaradi.sociallybackend.flows.comments.domain;
+package hu.dominikvaradi.sociallybackend.flows.message.domain;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
@@ -18,15 +18,15 @@ import java.util.Objects;
 @Getter
 @Setter
 @Entity
-@Table(name = "comment_reactions")
-public class CommentReaction extends BaseDomain {
+@Table(name = "message_reactions")
+public class MessageReaction extends BaseDomain {
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
 	private User user;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "comment_id", nullable = false)
-	private Comment comment;
+	@JoinColumn(name = "message_id", nullable = false)
+	private Message message;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "reaction", nullable = false)
@@ -42,7 +42,7 @@ public class CommentReaction extends BaseDomain {
 			return false;
 		}
 
-		CommentReaction other = (CommentReaction) o;
+		MessageReaction other = (MessageReaction) o;
 		return getId() != null && Objects.equals(getId(), other.getId());
 	}
 
