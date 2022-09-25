@@ -16,38 +16,53 @@
     <changeSet author="dominikvaradi" id="schema-init">
         <createTable tableName="users">
             <column name="id" type="bigint">
-                <constraints nullable="false" unique="true" primaryKey="true" primaryKeyName="users_id_pk"/>
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="users_id_pk"/>
             </column>
 
             <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
-                <constraints nullable="false" unique="true" uniqueConstraintName="users_public_id_uc"/>
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="users_public_id_uc"/>
             </column>
 
-            <column name="version" type="BIGINT" defaultValue="1">
+            <column name="version" type="bigint" defaultValue="1">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="created" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+            <column name="created" type="timestamp(6) without time zone">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="updated" type="TIMESTAMP(6) WITHOUT TIME ZONE">
+            <column name="updated" type="timestamp(6) without time zone">
                 <constraints nullable="false"/>
             </column>
 
             <column name="email" type="varchar(255)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="users_email_uc"/>
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="users_email_uc"/>
             </column>
 
-            <column name="first_name" type="varchar(255)">
+            <column name="password" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="last_name" type="varchar(255)">
+            <column name="name" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="password" type="varchar(255)"/>
+            <column name="birth_date" type="date"/>
+
+            <column name="birth_country" type="varchar(255)"/>
+
+            <column name="birth_city" type="varchar(255)"/>
+
+            <column name="current_country" type="varchar(255)"/>
+
+            <column name="current_city" type="varchar(255)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

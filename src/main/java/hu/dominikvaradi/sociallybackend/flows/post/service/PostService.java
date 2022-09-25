@@ -1,0 +1,36 @@
+package hu.dominikvaradi.sociallybackend.flows.post.service;
+
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateDto;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateDto;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface PostService {
+	Optional<Post> findPostByPublicId(UUID postPublicId);
+
+	Post createPost(User authorUser, User addresseeUser, PostCreateDto postCreateDto);
+
+	Page<Post> findAllPostsOnUsersTimeline(User user, Pageable pageable);
+
+	Page<Post> findAllPostsForUsersFeed(User user, Pageable pageable);
+
+	Post updatePost(Post post, PostUpdateDto postUpdateDto);
+
+	void deletePost(Post post);
+
+	PostReaction addReactionToPost(Post post, User user, Reaction reaction);
+
+	void deleteReactionFromPost(Post post, User user, Reaction reaction);
+
+	Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable);
+
+	Map<Reaction, Long> findAllReactionCountsByPost(Post post);
+}

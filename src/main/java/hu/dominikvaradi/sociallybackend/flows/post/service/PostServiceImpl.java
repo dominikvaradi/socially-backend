@@ -1,0 +1,127 @@
+package hu.dominikvaradi.sociallybackend.flows.post.service;
+
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateDto;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateDto;
+import hu.dominikvaradi.sociallybackend.flows.post.repository.PostReactionRepository;
+import hu.dominikvaradi.sociallybackend.flows.post.repository.PostRepository;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+
+@RequiredArgsConstructor
+@Transactional
+@Service
+public class PostServiceImpl implements PostService {
+	private final PostRepository postRepository;
+	private final PostReactionRepository postReactionRepository;
+	private final UserRepository userRepository;
+	private final FriendshipRepository friendshipRepository;
+
+	@Override
+	public Optional<Post> findPostByPublicId(UUID postPublicId) {
+		return postRepository.findByPublicId(postPublicId);
+	}
+
+	@Override
+	public Post createPost(User authorUser, User addresseeUser, PostCreateDto postCreateDto) {
+		Post newPost = Post.builder()
+				.author(authorUser)
+				.addressee(addresseeUser)
+				.header(postCreateDto.getHeader())
+				.content(postCreateDto.getContent())
+				.build();
+
+		return postRepository.save(newPost);
+	}
+
+	@Override
+	public Page<Post> findAllPostsOnUsersTimeline(User user, Pageable pageable) {
+		return postRepository.findByAddresseeOrderByCreatedDesc(user, pageable);
+	}
+
+	@Override
+	public Page<Post> findAllPostsForUsersFeed(User user, Pageable pageable) {
+		Set<User> feedUsers = friendshipRepository.findAllAcceptedByUser(user)
+				.stream()
+				.map(fs -> fs.getRequester().equals(user) ? fs.getAddressee() : fs.getRequester())
+				.collect(Collectors.toSet());
+
+		feedUsers.add(user);
+
+		return postRepository.findByAuthorOrUserIsInOrderByCreatedDesc(feedUsers, pageable);
+	}
+
+	@Override
+	public Post updatePost(Post post, PostUpdateDto postUpdateDto) {
+		if (!Objects.equals(post.getPublicId(), postUpdateDto.getId())) {
+			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
+		}
+
+		post.setHeader(postUpdateDto.getHeader());
+		post.setContent(postUpdateDto.getContent());
+
+		return postRepository.save(post);
+	}
+
+	@Override
+	public void deletePost(Post post) {
+		postRepository.delete(post);
+	}
+
+	@Override
+	public PostReaction addReactionToPost(Post post, User user, Reaction reaction) {
+		if (postReactionRepository.findByUserAndPostAndReaction(user, post, reaction).isPresent()) {
+			throw new RuntimeException();
+			// TODO REST Exception - már létezik az entity, conflict lenne.
+		}
+
+		PostReaction newCommentReaction = PostReaction.builder()
+				.reaction(reaction)
+				.user(user)
+				.post(post)
+				.build();
+
+		return postReactionRepository.save(newCommentReaction);
+	}
+
+	@Override
+	public void deleteReactionFromPost(Post post, User user, Reaction reaction) {
+		PostReaction postReaction = postReactionRepository.findByUserAndPostAndReaction(user, post, reaction)
+				.orElseThrow(); // TODO REST Exception 404
+
+		postReactionRepository.delete(postReaction);
+	}
+
+	@Override
+	public Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable) {
+		return postReactionRepository.findByPostOrderByUserNameAsc(post, pageable);
+	}
+
+	@Override
+	public Map<Reaction, Long> findAllReactionCountsByPost(Post post) {
+		Map<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+
+		for (Reaction reaction : Reaction.values()) {
+			reactionCount.put(reaction, postReactionRepository.countByPostAndReaction(post, reaction));
+		}
+
+		return reactionCount;
+	}
+}

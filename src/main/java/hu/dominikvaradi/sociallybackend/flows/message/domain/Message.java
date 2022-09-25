@@ -1,7 +1,8 @@
-package hu.dominikvaradi.sociallybackend.flows.user.domain;
+package hu.dominikvaradi.sociallybackend.flows.message.domain;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
-import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,12 +13,15 @@ import org.hibernate.Hibernate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import static javax.persistence.CascadeType.ALL;
 
 @Builder
 @Getter
@@ -26,35 +30,22 @@ import java.util.Set;
 @NoArgsConstructor
 @ToString
 @Entity
-@Table(name = "users")
-public class User extends BaseDomain {
-	@Column(name = "email", nullable = false, unique = true)
-	private String email;
+@Table(name = "messages")
+public class Message extends BaseDomain {
+	@Column(name = "content", nullable = false)
+	private String content;
 
-	@Column(name = "password", nullable = false)
-	private String password;
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-	@Column(name = "name", nullable = false)
-	private String name;
-
-	@Column(name = "birth_date")
-	private LocalDate birthDate;
-
-	@Column(name = "birth_country")
-	private String birthCountry;
-
-	@Column(name = "birth_city")
-	private String birthCity;
-
-	@Column(name = "current_country")
-	private String currentCountry;
-
-	@Column(name = "current_city")
-	private String currentCity;
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "conversation_id", nullable = false)
+	private Conversation conversation;
 
 	@ToString.Exclude
-	@OneToMany(mappedBy = "user")
-	private Set<UserConversation> userConversations = new HashSet<>();
+	@OneToMany(mappedBy = "message", cascade = ALL, orphanRemoval = true)
+	private Set<MessageReaction> reactions = new HashSet<>();
 
 	@Override
 	public boolean equals(Object o) {
@@ -66,7 +57,7 @@ public class User extends BaseDomain {
 			return false;
 		}
 
-		User other = (User) o;
+		Message other = (Message) o;
 		return getId() != null && Objects.equals(getId(), other.getId());
 	}
 
