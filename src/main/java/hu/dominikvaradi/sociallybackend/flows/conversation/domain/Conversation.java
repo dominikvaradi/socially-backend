@@ -11,16 +11,19 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import static javax.persistence.CascadeType.ALL;
+import static javax.persistence.EnumType.STRING;
+import static javax.persistence.FetchType.EAGER;
 
 @Builder
 @Getter
@@ -31,17 +34,19 @@ import java.util.Set;
 @Entity
 @Table(name = "conversations")
 public class Conversation extends BaseDomain {
-	@Enumerated(EnumType.STRING)
+	@Enumerated(STRING)
 	@Column(name = "type", nullable = false)
 	private ConversationType type;
 
-	@ToString.Exclude
-	@OneToMany(mappedBy = "conversation")
-	Set<UserConversation> userConversations = new HashSet<>();
+	@OneToMany(fetch = EAGER, mappedBy = "conversation", cascade = ALL)
+	private Set<UserConversation> userConversations = new java.util.LinkedHashSet<>();
 
 	@ToString.Exclude
-	@OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "conversation", cascade = ALL, orphanRemoval = true)
 	private Set<Message> messages = new HashSet<>();
+
+	@Column(name = "last_message_sent", nullable = false)
+	private LocalDateTime lastMessageSent;
 
 	@Override
 	public boolean equals(Object o) {

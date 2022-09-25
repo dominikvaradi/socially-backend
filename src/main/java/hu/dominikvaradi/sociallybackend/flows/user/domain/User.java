@@ -14,6 +14,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -30,18 +31,30 @@ public class User extends BaseDomain {
 	@Column(name = "email", nullable = false, unique = true)
 	private String email;
 
-	@Column(name = "first_name", nullable = false)
-	private String firstName;
-
-	@Column(name = "last_name", nullable = false)
-	private String lastName;
-
-	@Column(name = "password")
+	@Column(name = "password", nullable = false)
 	private String password;
+
+	@Column(name = "name", nullable = false)
+	private String name;
+
+	@Column(name = "birth_date")
+	private LocalDate birthDate;
+
+	@Column(name = "birth_country")
+	private String birthCountry;
+
+	@Column(name = "birth_city")
+	private String birthCity;
+
+	@Column(name = "current_country")
+	private String currentCountry;
+
+	@Column(name = "current_city")
+	private String currentCity;
 
 	@ToString.Exclude
 	@OneToMany(mappedBy = "user")
-	Set<UserConversation> userConversations = new HashSet<>();
+	private Set<UserConversation> userConversations = new HashSet<>();
 
 	@Override
 	public boolean equals(Object o) {

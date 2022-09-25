@@ -11,7 +11,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -21,6 +20,8 @@ import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import static javax.persistence.CascadeType.ALL;
 
 @Builder
 @Getter
@@ -43,7 +44,7 @@ public class Message extends BaseDomain {
 	private Conversation conversation;
 
 	@ToString.Exclude
-	@OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "message", cascade = ALL, orphanRemoval = true)
 	private Set<MessageReaction> reactions = new HashSet<>();
 
 	@Override

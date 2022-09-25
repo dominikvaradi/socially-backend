@@ -1,6 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.post.service;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateDto;
@@ -8,7 +9,7 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateDto;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
-import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
+import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,7 +31,8 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
 	private final PostRepository postRepository;
 	private final PostReactionRepository postReactionRepository;
-	private final UserService userService;
+	private final UserRepository userRepository;
+	private final FriendshipRepository friendshipRepository;
 
 	@Override
 	public Optional<Post> findPostByPublicId(UUID postPublicId) {
@@ -38,17 +40,10 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Post createNewPost(UUID authorUserPublicId, UUID addresseeUserPublicId, PostCreateDto postCreateDto) {
-		User author = userService.findUserByPublicId(authorUserPublicId).orElseThrow(); // TODO REST Exception 404
-		User addressee = author;
-
-		if (!Objects.equals(authorUserPublicId, addresseeUserPublicId)) {
-			addressee = userService.findUserByPublicId(addresseeUserPublicId).orElseThrow(); // TODO REST Exception 404
-		}
-
+	public Post createPost(User authorUser, User addresseeUser, PostCreateDto postCreateDto) {
 		Post newPost = Post.builder()
-				.author(author)
-				.addressee(addressee)
+				.author(authorUser)
+				.addressee(addresseeUser)
 				.header(postCreateDto.getHeader())
 				.content(postCreateDto.getContent())
 				.build();
@@ -57,26 +52,24 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Page<Post> getPostsOnUsersTimeline(UUID userPublicId, Pageable pageable) {
-		return postRepository.findByAddresseePublicIdOrderByCreatedDesc(userPublicId, pageable);
+	public Page<Post> findAllPostsOnUsersTimeline(User user, Pageable pageable) {
+		return postRepository.findByAddresseeOrderByCreatedDesc(user, pageable);
 	}
 
 	@Override
-	public Page<Post> getFeedPostsForUser(UUID userPublicId, Pageable pageable) {
-		Set<UUID> feedUserPublicIds = userService.getFriendsOfUser(userPublicId)
+	public Page<Post> findAllPostsForUsersFeed(User user, Pageable pageable) {
+		Set<User> feedUsers = friendshipRepository.findAllAcceptedByUser(user)
 				.stream()
-				.map(User::getPublicId)
+				.map(fs -> fs.getRequester().equals(user) ? fs.getAddressee() : fs.getRequester())
 				.collect(Collectors.toSet());
 
-		feedUserPublicIds.add(userPublicId);
+		feedUsers.add(user);
 
-		return postRepository.findByAuthorPublicIdIsInOrAddresseePublicIdIsInOrderByCreatedDesc(feedUserPublicIds, feedUserPublicIds, pageable);
+		return postRepository.findByAuthorOrUserIsInOrderByCreatedDesc(feedUsers, pageable);
 	}
 
 	@Override
-	public Post updatePost(UUID postPublicId, PostUpdateDto postUpdateDto) {
-		Post post = postRepository.findByPublicId(postPublicId).orElseThrow(); // TODO REST Exception 404
-
+	public Post updatePost(Post post, PostUpdateDto postUpdateDto) {
 		if (!Objects.equals(post.getPublicId(), postUpdateDto.getId())) {
 			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
 		}
@@ -88,18 +81,13 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public void deletePost(UUID postPublicId) {
-		Post post = postRepository.findByPublicId(postPublicId).orElseThrow(); // TODO REST Exception 404
-
+	public void deletePost(Post post) {
 		postRepository.delete(post);
 	}
 
 	@Override
-	public PostReaction addReactionToPost(UUID postPublicId, UUID userPublicId, Reaction reaction) {
-		Post post = postRepository.findByPublicId(postPublicId).orElseThrow(); // TODO REST Exception 404
-		User user = userService.findUserByPublicId(userPublicId).orElseThrow(); // TODO REST Exception 404
-
-		if (postReactionRepository.findByUserPublicIdAndPostPublicIdAndReaction(userPublicId, postPublicId, reaction).isPresent()) {
+	public PostReaction addReactionToPost(Post post, User user, Reaction reaction) {
+		if (postReactionRepository.findByUserAndPostAndReaction(user, post, reaction).isPresent()) {
 			throw new RuntimeException();
 			// TODO REST Exception - már létezik az entity, conflict lenne.
 		}
@@ -114,24 +102,24 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public void deleteReactionFromPost(UUID postPublicId, UUID userPublicId, Reaction reaction) {
-		PostReaction postReaction = postReactionRepository.findByUserPublicIdAndPostPublicIdAndReaction(userPublicId, postPublicId, reaction)
+	public void deleteReactionFromPost(Post post, User user, Reaction reaction) {
+		PostReaction postReaction = postReactionRepository.findByUserAndPostAndReaction(user, post, reaction)
 				.orElseThrow(); // TODO REST Exception 404
 
 		postReactionRepository.delete(postReaction);
 	}
 
 	@Override
-	public Set<PostReaction> getReactionsByPost(UUID postPublicId) {
-		return postReactionRepository.findByPostPublicIdOrderByUserLastNameAsc(postPublicId);
+	public Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable) {
+		return postReactionRepository.findByPostOrderByUserNameAsc(post, pageable);
 	}
 
 	@Override
-	public Map<Reaction, Long> getReactionsCountByPost(UUID postPublicId) {
+	public Map<Reaction, Long> findAllReactionCountsByPost(Post post) {
 		Map<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
 
 		for (Reaction reaction : Reaction.values()) {
-			reactionCount.put(reaction, postReactionRepository.countByPostPublicIdAndReaction(postPublicId, reaction));
+			reactionCount.put(reaction, postReactionRepository.countByPostAndReaction(post, reaction));
 		}
 
 		return reactionCount;

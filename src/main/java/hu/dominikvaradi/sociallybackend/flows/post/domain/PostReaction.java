@@ -12,12 +12,13 @@ import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.Objects;
+
+import static javax.persistence.EnumType.STRING;
 
 @Builder
 @Getter
@@ -36,7 +37,7 @@ public class PostReaction extends BaseDomain {
 	@JoinColumn(name = "post_id", nullable = false)
 	private Post post;
 
-	@Enumerated(EnumType.STRING)
+	@Enumerated(STRING)
 	@Column(name = "reaction", nullable = false)
 	private Reaction reaction;
 

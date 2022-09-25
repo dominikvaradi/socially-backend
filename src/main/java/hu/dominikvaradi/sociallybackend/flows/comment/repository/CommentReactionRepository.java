@@ -1,17 +1,19 @@
 package hu.dominikvaradi.sociallybackend.flows.comment.repository;
 
+import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 public interface CommentReactionRepository extends JpaRepository<CommentReaction, Long> {
-	Set<CommentReaction> findByCommentPublicIdOrderByUserLastNameAsc(UUID publicId);
+	Page<CommentReaction> findAllByCommentOrderByUserNameAsc(Comment comment, Pageable pageable);
 
-	Optional<CommentReaction> findByUserPublicIdAndCommentPublicIdAndReaction(UUID publicId, UUID publicId1, Reaction reaction);
+	Optional<CommentReaction> findByUserAndCommentAndReaction(User user, Comment comment, Reaction reaction);
 
-	long countByCommentPublicIdAndReaction(UUID publicId, Reaction reaction);
+	long countByCommentAndReaction(Comment comment, Reaction reaction);
 }

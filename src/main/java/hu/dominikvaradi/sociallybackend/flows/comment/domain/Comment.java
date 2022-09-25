@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -20,6 +19,8 @@ import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import static javax.persistence.CascadeType.ALL;
 
 @Builder
 @Getter
@@ -42,7 +43,7 @@ public class Comment extends BaseDomain {
 	private Post post;
 
 	@ToString.Exclude
-	@OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "comment", cascade = ALL, orphanRemoval = true)
 	private Set<CommentReaction> reactions = new HashSet<>();
 
 	@Override

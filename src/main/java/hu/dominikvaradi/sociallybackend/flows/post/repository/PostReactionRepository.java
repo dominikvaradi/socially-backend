@@ -1,17 +1,19 @@
 package hu.dominikvaradi.sociallybackend.flows.post.repository;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 
 public interface PostReactionRepository extends JpaRepository<PostReaction, Long> {
-	Set<PostReaction> findByPostPublicIdOrderByUserLastNameAsc(UUID postPublicId);
+	Page<PostReaction> findByPostOrderByUserNameAsc(Post post, Pageable pageable);
 
-	Optional<PostReaction> findByUserPublicIdAndPostPublicIdAndReaction(UUID userPublicId, UUID postPublicId, Reaction reaction);
+	Optional<PostReaction> findByUserAndPostAndReaction(User user, Post post, Reaction reaction);
 
-	long countByPostPublicIdAndReaction(UUID publicId, Reaction reaction);
+	long countByPostAndReaction(Post post, Reaction reaction);
 }

@@ -5,25 +5,31 @@ import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentCreateDto;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentUpdateDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface CommentService {
-	Comment createNewComment(UUID postPublicId, UUID userPublicId, CommentCreateDto commentCreateDto);
+	Optional<Comment> findCommentByPublicId(UUID commentPublicId);
 
-	Set<Comment> getCommentsByPost(UUID postPublicId);
+	Comment createComment(Post post, User user, CommentCreateDto commentCreateDto);
 
-	Comment updateComment(UUID commentPublicId, CommentUpdateDto commentUpdateDto);
+	Page<Comment> findAllCommentsByPost(Post post, Pageable pageable);
 
-	void deleteComment(UUID commentPublicId);
+	Comment updateComment(Comment comment, CommentUpdateDto commentUpdateDto);
 
-	CommentReaction addReactionToComment(UUID commentPublicId, UUID userPublicId, Reaction reaction);
+	void deleteComment(Comment comment);
 
-	void deleteReactionFromComment(UUID commentPublicId, UUID userPublicId, Reaction reaction);
+	CommentReaction addReactionToComment(Comment comment, User user, Reaction reaction);
 
-	Set<CommentReaction> getReactionsByComment(UUID commentPublicId);
+	void deleteReactionFromComment(Comment comment, User user, Reaction reaction);
 
-	Map<Reaction, Long> getReactionsCountByComment(UUID commentPublicId);
+	Page<CommentReaction> findAllReactionsByComment(Comment comment, Pageable pageable);
+
+	Map<Reaction, Long> findAllReactionCountsByComment(Comment comment);
 }

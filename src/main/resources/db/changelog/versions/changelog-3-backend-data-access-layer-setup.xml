@@ -273,6 +273,10 @@
             <column name="type" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
+
+            <column name="last_message_sent" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
         <createTable tableName="users_conversations">
