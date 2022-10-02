@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter
-public class CommentUpdateDto {
+public class CommentUpdateRequestDto {
 	private UUID id;
 	String content;
 }

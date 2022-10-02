@@ -4,8 +4,8 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
-import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateDto;
-import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateDto;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
@@ -40,12 +40,12 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Post createPost(User authorUser, User addresseeUser, PostCreateDto postCreateDto) {
+	public Post createPost(User authorUser, User addresseeUser, PostCreateRequestDto postCreateRequestDto) {
 		Post newPost = Post.builder()
 				.author(authorUser)
 				.addressee(addresseeUser)
-				.header(postCreateDto.getHeader())
-				.content(postCreateDto.getContent())
+				.header(postCreateRequestDto.getHeader())
+				.content(postCreateRequestDto.getContent())
 				.build();
 
 		return postRepository.save(newPost);
@@ -69,13 +69,13 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Post updatePost(Post post, PostUpdateDto postUpdateDto) {
-		if (!Objects.equals(post.getPublicId(), postUpdateDto.getId())) {
+	public Post updatePost(Post post, PostUpdateRequestDto postUpdateRequestDto) {
+		if (!Objects.equals(post.getPublicId(), postUpdateRequestDto.getId())) {
 			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
 		}
 
-		post.setHeader(postUpdateDto.getHeader());
-		post.setContent(postUpdateDto.getContent());
+		post.setHeader(postUpdateRequestDto.getHeader());
+		post.setContent(postUpdateRequestDto.getContent());
 
 		return postRepository.save(post);
 	}

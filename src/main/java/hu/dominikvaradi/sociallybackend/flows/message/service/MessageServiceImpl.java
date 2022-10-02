@@ -5,7 +5,7 @@ import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.MessageReaction;
-import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageCreateDto;
+import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.message.repository.MessageReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.message.repository.MessageRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
@@ -28,11 +28,11 @@ public class MessageServiceImpl implements MessageService {
 	private final ConversationRepository conversationRepository;
 
 	@Override
-	public Message createMessage(Conversation conversation, User user, MessageCreateDto messageCreateDto) {
+	public Message createMessage(Conversation conversation, User user, MessageCreateRequestDto messageCreateRequestDto) {
 		Message message = Message.builder()
 				.user(user)
 				.conversation(conversation)
-				.content(messageCreateDto.getContent())
+				.content(messageCreateRequestDto.getContent())
 				.build();
 
 		message = messageRepository.save(message);

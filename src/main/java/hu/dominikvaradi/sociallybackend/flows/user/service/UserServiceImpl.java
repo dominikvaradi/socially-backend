@@ -2,8 +2,8 @@ package hu.dominikvaradi.sociallybackend.flows.user.service;
 
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
-import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateDto;
-import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserUpdateDto;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserUpdateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,28 +27,28 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User createUser(UserCreateDto userCreateDto) {
-		Optional<User> existingUser = userRepository.findByEmail(userCreateDto.getEmail());
+	public User createUser(UserCreateRequestDto userCreateRequestDto) {
+		Optional<User> existingUser = userRepository.findByEmail(userCreateRequestDto.getEmail());
 		if (existingUser.isPresent()) {
 			throw new RuntimeException(); // TODO REST Exception - email címmel már létezik user.
 		}
 
 		User newUser = User.builder()
-				.email(userCreateDto.getEmail())
-				.password(userCreateDto.getPassword()) // TODO encrypt password
-				.name(userCreateDto.getName())
-				.birthDate(userCreateDto.getBirthDate())
-				.birthCountry(userCreateDto.getBirthCountry())
-				.birthCity(userCreateDto.getBirthCity())
-				.currentCountry(userCreateDto.getCurrentCountry())
-				.currentCity(userCreateDto.getCurrentCity())
+				.email(userCreateRequestDto.getEmail())
+				.password(userCreateRequestDto.getPassword()) // TODO encrypt password
+				.name(userCreateRequestDto.getName())
+				.birthDate(userCreateRequestDto.getBirthDate())
+				.birthCountry(userCreateRequestDto.getBirthCountry())
+				.birthCity(userCreateRequestDto.getBirthCity())
+				.currentCountry(userCreateRequestDto.getCurrentCountry())
+				.currentCity(userCreateRequestDto.getCurrentCity())
 				.build();
 
 		return userRepository.save(newUser);
 	}
 
 	@Override
-	public User updateUser(User user, UserUpdateDto userUpdateDto) {
+	public User updateUser(User user, UserUpdateRequestDto userUpdateDto) {
 		if (!user.getPublicId().equals(userUpdateDto.getId())) {
 			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
 		}
