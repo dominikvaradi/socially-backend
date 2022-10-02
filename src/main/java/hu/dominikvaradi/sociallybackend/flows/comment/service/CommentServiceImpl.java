@@ -2,8 +2,8 @@ package hu.dominikvaradi.sociallybackend.flows.comment.service;
 
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
-import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentCreateDto;
-import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentUpdateDto;
+import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentUpdateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
@@ -34,9 +34,9 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public Comment createComment(Post post, User user, CommentCreateDto commentCreateDto) {
+	public Comment createComment(Post post, User user, CommentCreateRequestDto commentCreateRequestDto) {
 		Comment newComment = Comment.builder()
-				.content(commentCreateDto.getContent())
+				.content(commentCreateRequestDto.getContent())
 				.post(post)
 				.user(user)
 				.build();
@@ -50,12 +50,12 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public Comment updateComment(Comment comment, CommentUpdateDto commentUpdateDto) {
-		if (!Objects.equals(comment.getPublicId(), commentUpdateDto.getId())) {
+	public Comment updateComment(Comment comment, CommentUpdateRequestDto commentUpdateRequestDto) {
+		if (!Objects.equals(comment.getPublicId(), commentUpdateRequestDto.getId())) {
 			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
 		}
 
-		comment.setContent(commentUpdateDto.getContent());
+		comment.setContent(commentUpdateRequestDto.getContent());
 
 		return commentRepository.save(comment);
 	}

@@ -38,6 +38,7 @@ public class Conversation extends BaseDomain {
 	@Column(name = "type", nullable = false)
 	private ConversationType type;
 
+	@ToString.Exclude
 	@OneToMany(fetch = EAGER, mappedBy = "conversation", cascade = ALL)
 	private Set<UserConversation> userConversations = new java.util.LinkedHashSet<>();
 
