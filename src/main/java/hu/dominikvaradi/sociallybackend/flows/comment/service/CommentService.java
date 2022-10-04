@@ -11,11 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.EnumMap;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface CommentService {
-	Optional<Comment> findCommentByPublicId(UUID commentPublicId);
+	Comment findCommentByPublicId(UUID commentPublicId);
 
 	Comment createComment(Post post, User user, CommentCreateRequestDto commentCreateRequestDto);
 

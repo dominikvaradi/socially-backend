@@ -1,5 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.conversation.service;
 
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -61,8 +61,9 @@ public class ConversationServiceImpl implements ConversationService {
 	}
 
 	@Override
-	public Optional<Conversation> findConversationByPublicId(UUID conversationPublicId) {
-		return conversationRepository.findByPublicId(conversationPublicId);
+	public Conversation findConversationByPublicId(UUID conversationPublicId) {
+		return conversationRepository.findByPublicId(conversationPublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Conversation not found."));
 	}
 
 	@Override
@@ -83,7 +84,7 @@ public class ConversationServiceImpl implements ConversationService {
 		UserConversation userConversation = userConversations.stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
-				.orElseThrow(); // TODO REST Exception 404 not found in collection.
+				.orElseThrow(() -> new EntityNotFoundException("User not found in conversation."));
 
 		userConversations.remove(userConversation);
 
@@ -95,7 +96,7 @@ public class ConversationServiceImpl implements ConversationService {
 		UserConversation userConversation = conversation.getUserConversations().stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
-				.orElseThrow(); // TODO REST Exception 404 not found in collection.
+				.orElseThrow(() -> new EntityNotFoundException("User not found in conversation."));
 
 		userConversation.setUserRole(role);
 

@@ -8,6 +8,8 @@ spring:
     url: 'jdbc:postgresql://localhost:5432/socially'
     username: socially
     password: socially
+  jpa:
+    open-in-view: false
 springdoc:
   api-docs:
     path: '/api-docs'

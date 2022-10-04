@@ -6,7 +6,6 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,7 +14,7 @@ public interface ConversationService {
 
 	Conversation createGroupConversation(User ownerUser, Set<User> otherUsers);
 
-	Optional<Conversation> findConversationByPublicId(UUID conversationPublicId);
+	Conversation findConversationByPublicId(UUID conversationPublicId);
 
 	Conversation addUsersToConversation(Conversation conversation, Set<User> users);
 

@@ -1,6 +1,8 @@
 package hu.dominikvaradi.sociallybackend.flows.message.service;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
@@ -55,7 +57,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public MessageReaction addReactionToMessage(Message message, User user, Reaction reaction) {
 		if (messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction).isPresent()) {
-			throw new RuntimeException(); // TODO REST Exception - már létezik az entity, conflict lenne.
+			throw new EntityConflictException("Reaction already exists on message made by the user.");
 		}
 
 		MessageReaction newMessageReaction = MessageReaction.builder()
@@ -70,7 +72,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public void deleteReactionFromMessage(Message message, User user, Reaction reaction) {
 		MessageReaction messageReaction = messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction)
-				.orElseThrow(); // TODO REST Exception 404
+				.orElseThrow(() -> new EntityNotFoundException("Reaction not found on message made by the user."));
 
 		messageReactionRepository.delete(messageReaction);
 	}

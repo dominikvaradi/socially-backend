@@ -1,5 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.user.service;
 
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateRequestDto;
@@ -24,14 +26,14 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User findUserByPublicId(UUID userPublicId) {
 		return userRepository.findByPublicId(userPublicId)
-				.orElseThrow(); // TODO REST Exception 404 not found
+				.orElseThrow(() -> new EntityNotFoundException("User not found."));
 	}
 
 	@Override
 	public User createUser(UserCreateRequestDto userCreateRequestDto) {
 		Optional<User> existingUser = userRepository.findByEmail(userCreateRequestDto.getEmail());
 		if (existingUser.isPresent()) {
-			throw new RuntimeException(); // TODO REST Exception - email címmel már létezik user.
+			throw new EntityConflictException("Email is already taken by an other user.");
 		}
 
 		User newUser = User.builder()
@@ -50,10 +52,6 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User updateUser(User user, UserUpdateRequestDto userUpdateDto) {
-		if (!user.getPublicId().equals(userUpdateDto.getId())) {
-			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
-		}
-
 		user.setName(userUpdateDto.getName());
 		user.setBirthDate(userUpdateDto.getBirthDate());
 		user.setBirthCountry(userUpdateDto.getBirthCountry());

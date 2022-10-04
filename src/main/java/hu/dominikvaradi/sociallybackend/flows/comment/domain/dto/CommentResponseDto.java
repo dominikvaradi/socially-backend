@@ -19,5 +19,5 @@ public class CommentResponseDto {
 	private UUID authorId;
 	private String authorName;
 	private LocalDateTime created;
-	EnumMap<Reaction, Integer> reactionsCount;
+	EnumMap<Reaction, Long> reactionsCount;
 }

@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -31,11 +31,11 @@ public abstract class BaseDomain implements Serializable {
 	@Column(name = "public_id", nullable = false, unique = true)
 	private UUID publicId = UUID.randomUUID();
 
-	@CreatedDate
+	@CreationTimestamp
 	@Column(name = "created", nullable = false)
 	private LocalDateTime created;
 
-	@LastModifiedDate
+	@UpdateTimestamp
 	@Column(name = "updated", nullable = false)
 	private LocalDateTime updated;
 

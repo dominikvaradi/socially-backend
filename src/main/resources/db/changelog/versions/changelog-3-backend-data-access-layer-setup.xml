@@ -7,7 +7,7 @@
 
     <changeSet id="3-backend-data-access-layer-setup" author="dominikvaradi">
         <createTable tableName="friendships">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -63,7 +63,7 @@
         </createTable>
 
         <createTable tableName="posts">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -110,7 +110,7 @@
         </createTable>
 
         <createTable tableName="post_reactions">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -155,7 +155,7 @@
         </createTable>
 
         <createTable tableName="comments">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -200,7 +200,7 @@
         </createTable>
 
         <createTable tableName="comment_reactions">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -245,7 +245,7 @@
         </createTable>
 
         <createTable tableName="conversations">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -304,7 +304,7 @@
         </createTable>
 
         <createTable tableName="messages">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
@@ -349,7 +349,7 @@
         </createTable>
 
         <createTable tableName="message_reactions">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"

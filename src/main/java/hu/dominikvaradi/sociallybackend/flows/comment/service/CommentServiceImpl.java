@@ -7,6 +7,8 @@ import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentUpdateRe
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumMap;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -28,8 +28,9 @@ public class CommentServiceImpl implements CommentService {
 	private final CommentReactionRepository commentReactionRepository;
 
 	@Override
-	public Optional<Comment> findCommentByPublicId(UUID commentPublicId) {
-		return commentRepository.findByPublicId(commentPublicId);
+	public Comment findCommentByPublicId(UUID commentPublicId) {
+		return commentRepository.findByPublicId(commentPublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Comment not found."));
 	}
 
 	@Override
@@ -50,10 +51,6 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	public Comment updateComment(Comment comment, CommentUpdateRequestDto commentUpdateRequestDto) {
-		if (!Objects.equals(comment.getPublicId(), commentUpdateRequestDto.getId())) {
-			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
-		}
-
 		comment.setContent(commentUpdateRequestDto.getContent());
 
 		return commentRepository.save(comment);
@@ -67,7 +64,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public CommentReaction addReactionToComment(Comment comment, User user, Reaction reaction) {
 		if (commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction).isPresent()) {
-			throw new RuntimeException(); // TODO REST Exception - már létezik az entity, conflict lenne.
+			throw new EntityConflictException("Reaction already exists on comment made by the user.");
 		}
 
 		CommentReaction newCommentReaction = CommentReaction.builder()
@@ -82,7 +79,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public void deleteReactionFromComment(Comment comment, User user, Reaction reaction) {
 		CommentReaction commentReaction = commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction)
-				.orElseThrow(); // TODO REST Exception 404
+				.orElseThrow(() -> new EntityNotFoundException("Comment reaction not found."));
 
 		commentReactionRepository.delete(commentReaction);
 	}

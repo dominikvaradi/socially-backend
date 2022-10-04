@@ -1,14 +1,21 @@
 package hu.dominikvaradi.sociallybackend.flows.post.rest;
 
+import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.comment.service.CommentService;
+import hu.dominikvaradi.sociallybackend.flows.comment.transformers.Comment2CommentResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
+import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostReactionResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.post.service.PostService;
-import liquibase.repackaged.org.apache.commons.lang3.NotImplementedException;
+import hu.dominikvaradi.sociallybackend.flows.post.transformers.Post2PostResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.post.transformers.PostReaction2PostReactionResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -28,49 +35,103 @@ import java.util.UUID;
 @RestController
 public class PostController {
 	private final PostService postService;
+	private final CommentService commentService;
 
 	@GetMapping("/api/posts")
 	public ResponseEntity<Page<PostResponseDto>> findAllPostsOnCurrentUsersFeed(@ParameterObject Pageable pageable) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Page<PostResponseDto> responseData = postService.findAllPostsForUsersFeed(currentUser, pageable)
+				.map(Post2PostResponseDtoTransformer::transform);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@GetMapping("/api/posts/{postId}")
 	public ResponseEntity<PostResponseDto> findPostByPublicId(@PathVariable(name = "postId") UUID postPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(post);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PutMapping("/api/posts/{postId}")
 	public ResponseEntity<PostResponseDto> updatePost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		Post updatedPost = postService.updatePost(post, postUpdateRequestDto);
+
+		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(updatedPost);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@DeleteMapping("/api/posts/{postId}")
 	public ResponseEntity<Void> deletePost(@PathVariable(name = "postId") UUID postPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		postService.deletePost(post);
+
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/api/posts/{postId}/comments")
 	public ResponseEntity<Page<CommentResponseDto>> findAllCommentsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject Pageable pageable) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		Page<CommentResponseDto> responseData = commentService.findAllCommentsByPost(post, pageable)
+				.map(c -> {
+					CommentResponseDto transformed = Comment2CommentResponseDtoTransformer.transform(c);
+					transformed.setReactionsCount(commentService.findAllReactionCountsByComment(c));
+
+					return transformed;
+				});
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PostMapping("/api/posts/{postId}/comments")
 	public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody CommentCreateRequestDto commentCreateRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		Comment createdComment = commentService.createComment(post, currentUser, commentCreateRequestDto);
+
+		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(createdComment);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@GetMapping("/api/posts/{postId}/reactions")
 	public ResponseEntity<Page<PostReactionResponseDto>> findAllReactionsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject Pageable pageable) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		Page<PostReactionResponseDto> responseData = postService.findAllReactionsByPost(post, pageable)
+				.map(PostReaction2PostReactionResponseDtoTransformer::transform);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PostMapping("/api/posts/{postId}/reactions")
 	public ResponseEntity<PostReactionResponseDto> createReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		Post post = postService.findPostByPublicId(postPublicId);
+
+		PostReaction createdReaction = postService.addReactionToPost(post, currentUser, reactionCreateRequestDto.getReaction());
+
+		PostReactionResponseDto responseData = PostReaction2PostReactionResponseDtoTransformer.transform(createdReaction);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@DeleteMapping("/api/posts/{postId}/reactions/{reaction}")
-	public ResponseEntity<PostReactionResponseDto> deleteReactionFromPost(@PathVariable(name = "postId") UUID postPublicId, @PathVariable(name = "reaction") Reaction reaction) {
-		throw new NotImplementedException("REST method not implemented yet.");
+	public ResponseEntity<Void> deleteReactionFromPost(@PathVariable(name = "postId") UUID postPublicId, @PathVariable(name = "reaction") Reaction reaction) {
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		Post post = postService.findPostByPublicId(postPublicId);
+		
+		postService.deleteReactionFromPost(post, currentUser, reaction);
+
+		return ResponseEntity.noContent().build();
 	}
 }

@@ -1,6 +1,5 @@
 package hu.dominikvaradi.sociallybackend.flows.user.rest;
 
-import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.EnumMap;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -107,14 +105,6 @@ public class UserController {
 		Post createdPost = postService.createPost(currentUser, addresseeUser, postCreateRequestDto);
 
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(createdPost);
-
-		EnumMap<Reaction, Long> emptyReactionCounts = new EnumMap<>(Reaction.class);
-		for (Reaction reaction : Reaction.values()) {
-			emptyReactionCounts.put(reaction, 0L);
-		}
-
-		responseData.setReactionsCount(emptyReactionCounts);
-		responseData.setCommentsCount(0);
 
 		return ResponseEntity.ok(responseData);
 	}
