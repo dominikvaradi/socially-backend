@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.EnumMap;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Transactional
@@ -82,8 +81,8 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	@Override
-	public Map<Reaction, Long> findAllReactionCountsByMessage(Message message) {
-		Map<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public EnumMap<Reaction, Long> findAllReactionCountsByMessage(Message message) {
+		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
 
 		for (Reaction reaction : Reaction.values()) {
 			reactionCount.put(reaction, messageReactionRepository.countByMessageAndReaction(message, reaction));

@@ -9,7 +9,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Map;
+import java.util.EnumMap;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,5 +32,7 @@ public interface PostService {
 
 	Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable);
 
-	Map<Reaction, Long> findAllReactionCountsByPost(Post post);
+	EnumMap<Reaction, Long> findAllReactionCountsByPost(Post post);
+
+	long findCommentCountByPost(Post post);
 }

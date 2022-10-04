@@ -6,11 +6,10 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserUpdateRequestD
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
-	Optional<User> findUserByPublicId(UUID userPublicId);
+	User findUserByPublicId(UUID userPublicId);
 
 	User createUser(UserCreateRequestDto userCreateRequestDto);
 

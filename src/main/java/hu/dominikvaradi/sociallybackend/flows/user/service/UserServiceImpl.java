@@ -22,8 +22,9 @@ public class UserServiceImpl implements UserService {
 	private final FriendshipRepository friendshipRepository;
 
 	@Override
-	public Optional<User> findUserByPublicId(UUID userPublicId) {
-		return userRepository.findByPublicId(userPublicId);
+	public User findUserByPublicId(UUID userPublicId) {
+		return userRepository.findByPublicId(userPublicId)
+				.orElseThrow(); // TODO REST Exception 404 not found
 	}
 
 	@Override

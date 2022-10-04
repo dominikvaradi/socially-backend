@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -94,8 +93,8 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public Map<Reaction, Long> findAllReactionCountsByComment(Comment comment) {
-		Map<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public EnumMap<Reaction, Long> findAllReactionCountsByComment(Comment comment) {
+		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
 
 		for (Reaction reaction : Reaction.values()) {
 			reactionCount.put(reaction, commentReactionRepository.countByCommentAndReaction(comment, reaction));
