@@ -118,9 +118,9 @@ public class PostController {
 		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 		Post post = postService.findPostByPublicId(postPublicId);
 
-		PostReaction createdReaction = postService.addReactionToPost(post, currentUser, reactionCreateRequestDto.getReaction());
+		PostReaction createdPostReaction = postService.addReactionToPost(post, currentUser, reactionCreateRequestDto.getReaction());
 
-		PostReactionResponseDto responseData = PostReaction2PostReactionResponseDtoTransformer.transform(createdReaction);
+		PostReactionResponseDto responseData = PostReaction2PostReactionResponseDtoTransformer.transform(createdPostReaction);
 
 		return ResponseEntity.ok(responseData);
 	}

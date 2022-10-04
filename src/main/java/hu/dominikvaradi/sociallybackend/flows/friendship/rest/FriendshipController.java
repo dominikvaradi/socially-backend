@@ -1,10 +1,14 @@
 package hu.dominikvaradi.sociallybackend.flows.friendship.rest;
 
+import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.dto.FriendRequestCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.dto.FriendRequestIncomingResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.dto.FriendRequestOutgoingResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.friendship.service.FriendshipService;
-import liquibase.repackaged.org.apache.commons.lang3.NotImplementedException;
+import hu.dominikvaradi.sociallybackend.flows.friendship.transformers.Friendship2FriendRequestIncomingResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.friendship.transformers.Friendship2FriendRequestOutgoingResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -23,34 +27,73 @@ import java.util.UUID;
 @RestController
 public class FriendshipController {
 	private final FriendshipService friendshipService;
+	private final UserService userService;
 
 	@GetMapping("/friendships/incoming")
 	public ResponseEntity<Page<FriendRequestIncomingResponseDto>> findAllIncomingFriendRequestsForCurrentUser(@ParameterObject Pageable pageable) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Page<FriendRequestIncomingResponseDto> responseData = friendshipService.findAllIncomingFriendRequestsOfUser(currentUser, pageable)
+				.map(fs -> Friendship2FriendRequestIncomingResponseDtoTransformer.transform(fs, currentUser));
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PostMapping("/friendships/incoming/{friendshipId}/accept")
-	public ResponseEntity<Void> acceptIncomingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+	public ResponseEntity<FriendRequestIncomingResponseDto> acceptIncomingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Friendship acceptedFriendship = friendshipService.acceptFriendRequest(friendship, currentUser);
+
+		FriendRequestIncomingResponseDto responseData = Friendship2FriendRequestIncomingResponseDtoTransformer.transform(acceptedFriendship, currentUser);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@DeleteMapping("/friendships/incoming/{friendshipId}")
-	public ResponseEntity<Void> declineIncomingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+	public ResponseEntity<FriendRequestIncomingResponseDto> declineIncomingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Friendship declinedFriendship = friendshipService.declineFriendRequest(friendship, currentUser);
+
+		FriendRequestIncomingResponseDto responseData = Friendship2FriendRequestIncomingResponseDtoTransformer.transform(declinedFriendship, currentUser);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@GetMapping("/friendships/outgoing")
 	public ResponseEntity<Page<FriendRequestOutgoingResponseDto>> findAllOutgoingFriendRequestsForCurrentUser(@ParameterObject Pageable pageable) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Page<FriendRequestOutgoingResponseDto> responseData = friendshipService.findAllOutgoingFriendRequestsOfUser(currentUser, pageable)
+				.map((fs -> Friendship2FriendRequestOutgoingResponseDtoTransformer.transform(fs, currentUser)));
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PostMapping("/friendships/outgoing")
 	public ResponseEntity<FriendRequestOutgoingResponseDto> createNewFriendRequest(@RequestBody FriendRequestCreateRequestDto friendRequestCreateRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		User addresseeUser = userService.findUserByPublicId(friendRequestCreateRequestDto.getAddresseeUserId());
+
+		Friendship createdFriendship = friendshipService.createFriendRequest(currentUser, addresseeUser);
+
+		FriendRequestOutgoingResponseDto responseData = Friendship2FriendRequestOutgoingResponseDtoTransformer.transform(createdFriendship, currentUser);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@DeleteMapping("/friendships/outgoing/{friendshipId}")
-	public ResponseEntity<Void> revokeOutgoingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+	public ResponseEntity<FriendRequestOutgoingResponseDto> revokeOutgoingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Friendship revokedFriendship = friendshipService.declineFriendRequest(friendship, currentUser);
+
+		FriendRequestOutgoingResponseDto responseData = Friendship2FriendRequestOutgoingResponseDtoTransformer.transform(revokedFriendship, currentUser);
+
+		return ResponseEntity.ok(responseData);
 	}
 }

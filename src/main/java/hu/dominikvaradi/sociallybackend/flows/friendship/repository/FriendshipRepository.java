@@ -9,8 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
+	Optional<Friendship> findByPublicId(UUID friendshipPublicId);
+
 	@Query("select f from Friendship f where (f.requester = ?1 and f.addressee = ?2) or (f.requester = ?2 and f.addressee = ?1)")
 	Optional<Friendship> findAllByRequesterAndAddressee(User requesterUser, User addresseeUser);
 
