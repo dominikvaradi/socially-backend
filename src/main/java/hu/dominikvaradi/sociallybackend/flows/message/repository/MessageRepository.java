@@ -6,6 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 public interface MessageRepository extends JpaRepository<Message, Long> {
+	Optional<Message> findByPublicId(UUID messagePublicId);
+
 	Page<Message> findByConversationOrderByCreatedDesc(Conversation conversation, Pageable pageable);
 }

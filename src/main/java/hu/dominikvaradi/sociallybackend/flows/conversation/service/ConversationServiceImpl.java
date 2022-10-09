@@ -5,6 +5,7 @@ import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
+import hu.dominikvaradi.sociallybackend.flows.conversation.repository.UserConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.U
 @Service
 public class ConversationServiceImpl implements ConversationService {
 	private final ConversationRepository conversationRepository;
+	private final UserConversationRepository userConversationRepository;
 
 	@Override
 	public Conversation createDirectConversation(User requesterUser, User addresseeUser) {
@@ -67,18 +70,18 @@ public class ConversationServiceImpl implements ConversationService {
 	}
 
 	@Override
-	public Conversation addUsersToConversation(Conversation conversation, Set<User> users) {
+	public List<UserConversation> addUsersToConversation(Conversation conversation, Set<User> users) {
 		Set<UserConversation> userConversations = users.stream()
 				.map(u -> createUserConversation(u, conversation, NORMAL))
 				.collect(Collectors.toSet());
 
 		conversation.getUserConversations().addAll(userConversations);
 
-		return conversationRepository.save(conversation);
+		return userConversationRepository.saveAll(userConversations);
 	}
 
 	@Override
-	public Conversation removeUserFromConversation(Conversation conversation, User user) {
+	public void removeUserFromConversation(Conversation conversation, User user) {
 		Set<UserConversation> userConversations = conversation.getUserConversations();
 
 		UserConversation userConversation = userConversations.stream()
@@ -88,11 +91,11 @@ public class ConversationServiceImpl implements ConversationService {
 
 		userConversations.remove(userConversation);
 
-		return conversationRepository.save(conversation);
+		userConversationRepository.save(userConversation);
 	}
 
 	@Override
-	public Conversation changeUserRoleInConversation(Conversation conversation, User user, UserConversationRole role) {
+	public UserConversation changeUserRoleInConversation(Conversation conversation, User user, UserConversationRole role) {
 		UserConversation userConversation = conversation.getUserConversations().stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
@@ -100,7 +103,7 @@ public class ConversationServiceImpl implements ConversationService {
 
 		userConversation.setUserRole(role);
 
-		return conversationRepository.save(conversation);
+		return userConversationRepository.save(userConversation);
 	}
 
 	@Override

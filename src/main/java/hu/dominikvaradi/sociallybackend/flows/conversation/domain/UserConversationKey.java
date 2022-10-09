@@ -18,7 +18,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @ToString
 @Embeddable
-class UserConversationKey implements Serializable {
+public class UserConversationKey implements Serializable {
 	@Column(name = "user_id")
 	Long userId;
 

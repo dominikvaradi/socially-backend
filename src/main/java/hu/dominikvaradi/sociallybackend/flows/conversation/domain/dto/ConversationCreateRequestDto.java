@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -13,5 +13,5 @@ import java.util.UUID;
 @Setter
 public class ConversationCreateRequestDto {
 	private ConversationType type;
-	private Set<UUID> memberUserIds;
+	private List<UUID> memberUserIds;
 }

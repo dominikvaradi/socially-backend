@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.EnumMap;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Transactional
@@ -27,6 +28,12 @@ public class MessageServiceImpl implements MessageService {
 	private final MessageRepository messageRepository;
 	private final MessageReactionRepository messageReactionRepository;
 	private final ConversationRepository conversationRepository;
+
+	@Override
+	public Message findMessageByPublicId(UUID messagePublicId) {
+		return messageRepository.findByPublicId(messagePublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Message not found."));
+	}
 
 	@Override
 	public Message createMessage(Conversation conversation, User user, MessageCreateRequestDto messageCreateRequestDto) {

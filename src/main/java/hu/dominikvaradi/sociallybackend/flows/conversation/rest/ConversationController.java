@@ -1,14 +1,22 @@
 package hu.dominikvaradi.sociallybackend.flows.conversation.rest;
 
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.ConversationAddUsersRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.ConversationChangeUserRoleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.ConversationCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.ConversationResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.ConversationUserResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.conversation.service.ConversationService;
+import hu.dominikvaradi.sociallybackend.flows.conversation.transformers.Conversation2ConversationResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.conversation.transformers.UserConversation2ConversationUserResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.message.service.MessageService;
+import hu.dominikvaradi.sociallybackend.flows.message.transformers.Message2MessageResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
+import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
 import liquibase.repackaged.org.apache.commons.lang3.NotImplementedException;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
@@ -31,44 +39,87 @@ import java.util.UUID;
 public class ConversationController {
 	private final ConversationService conversationService;
 	private final MessageService messageService;
+	private final UserService userService;
 
 	@GetMapping("/api/conversations")
 	public ResponseEntity<Page<ConversationResponseDto>> findAllConversationsByCurrentUser(@ParameterObject Pageable pageable) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		Page<ConversationResponseDto> responseData = conversationService.findAllConversationsByUser(currentUser, pageable)
+				.map(Conversation2ConversationResponseDtoTransformer::transform);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PostMapping("/api/conversations")
 	public ResponseEntity<ConversationResponseDto> createConversation(@RequestBody ConversationCreateRequestDto conversationCreateRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+
+		throw new NotImplementedException();
 	}
 
 	@GetMapping("/api/conversations/{conversationId}")
 	public ResponseEntity<ConversationResponseDto> findConversationByPublicId(@PathVariable(name = "conversationId") UUID conversationPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
+
+		ConversationResponseDto responseData = Conversation2ConversationResponseDtoTransformer.transform(conversation);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PutMapping("/api/conversations/{conversationId}/users")
 	public ResponseEntity<Set<ConversationUserResponseDto>> addUsersToConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody ConversationAddUsersRequestDto conversationAddUsersRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
+		
+		throw new NotImplementedException();
 	}
 
 	@DeleteMapping("/api/conversations/{conversationId}/users/{userId}")
 	public ResponseEntity<Void> removeUserFromConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
+		User user = userService.findUserByPublicId(userPublicId);
+
+		conversationService.removeUserFromConversation(conversation, user);
+
+		return ResponseEntity.noContent().build();
 	}
 
 	@PutMapping("/api/conversations/{conversationId}/users/{userId}/role")
 	public ResponseEntity<ConversationUserResponseDto> updateUsersRoleInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId, ConversationChangeUserRoleRequestDto conversationChangeUserRoleRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
+		User user = userService.findUserByPublicId(userPublicId);
+
+		UserConversation updatedUserConversation = conversationService.changeUserRoleInConversation(conversation, user, conversationChangeUserRoleRequestDto.getRole());
+
+		ConversationUserResponseDto responseData = UserConversation2ConversationUserResponseDtoTransformer.transform(updatedUserConversation);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@GetMapping("/api/conversations/{conversationId}/messages")
-	public ResponseEntity<Page<MessageResponseDto>> findMessagesByConversation(@PathVariable(name = "conversationId") UUID conversationPublicId) {
-		throw new NotImplementedException("REST method not implemented yet.");
+	public ResponseEntity<Page<MessageResponseDto>> findMessagesByConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @ParameterObject Pageable pageable) {
+		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
+
+		Page<MessageResponseDto> responseData = messageService.findAllMessagesByConversation(conversation, pageable)
+				.map(m -> {
+					MessageResponseDto transformed = Message2MessageResponseDtoTransformer.transform(m);
+					transformed.setReactionsCount(messageService.findAllReactionCountsByMessage(m));
+
+					return transformed;
+				});
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@PostMapping("/api/conversations/{conversationId}/messages")
-	public ResponseEntity<Page<MessageResponseDto>> createMessageInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody MessageCreateRequestDto messageCreateRequestDto) {
-		throw new NotImplementedException("REST method not implemented yet.");
+	public ResponseEntity<MessageResponseDto> createMessageInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody MessageCreateRequestDto messageCreateRequestDto) {
+		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
+
+		Message createdMessage = messageService.createMessage(conversation, currentUser, messageCreateRequestDto);
+
+		MessageResponseDto responseData = Message2MessageResponseDtoTransformer.transform(createdMessage);
+
+		return ResponseEntity.ok(responseData);
 	}
 }
