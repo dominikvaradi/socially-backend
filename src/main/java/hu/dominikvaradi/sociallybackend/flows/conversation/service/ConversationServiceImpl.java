@@ -1,9 +1,14 @@
 package hu.dominikvaradi.sociallybackend.flows.conversation.service;
 
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityUnprocessableException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
+import hu.dominikvaradi.sociallybackend.flows.conversation.repository.UserConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,14 +16,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType.DIRECT;
-import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType.GROUP;
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole.ADMIN;
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole.NORMAL;
 
@@ -27,33 +32,35 @@ import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.U
 @Service
 public class ConversationServiceImpl implements ConversationService {
 	private final ConversationRepository conversationRepository;
+	private final UserConversationRepository userConversationRepository;
 
 	@Override
-	public Conversation createDirectConversation(User requesterUser, User addresseeUser) {
+	public Conversation createConversation(User requesterUser, ConversationType type, Set<User> otherUsers) {
 		Conversation conversation = Conversation.builder()
-				.type(DIRECT)
+				.type(type)
 				.build();
 
-		Set<UserConversation> userConversations = new HashSet<>();
-		userConversations.add(createUserConversation(requesterUser, conversation, NORMAL));
-		userConversations.add(createUserConversation(addresseeUser, conversation, NORMAL));
+		if (otherUsers.contains(requesterUser)) {
+			throw new EntityUnprocessableException("The requester user cannot be in the other user members array.");
+		}
 
-		conversation.setUserConversations(userConversations);
+		if (type == DIRECT) {
+			if (otherUsers.size() != 1) {
+				throw new EntityUnprocessableException("Direct conversations must contain only one user in the other user members array.");
+			}
 
-		return conversationRepository.save(conversation);
-	}
-
-	@Override
-	public Conversation createGroupConversation(User ownerUser, Set<User> otherUsers) {
-		Conversation conversation = Conversation.builder()
-				.type(GROUP)
-				.build();
+			User otherUser = otherUsers.stream().iterator().next();
+			Optional<Conversation> conversationBetweenTheUsers = findDirectConversationByUsers(requesterUser, otherUser);
+			if (conversationBetweenTheUsers.isPresent()) {
+				throw new EntityConflictException("The requester user and the given user already have an existing conversation.");
+			}
+		}
 
 		Set<UserConversation> userConversations = otherUsers.stream()
 				.map(u -> createUserConversation(u, conversation, NORMAL))
 				.collect(Collectors.toSet());
 
-		userConversations.add(createUserConversation(ownerUser, conversation, ADMIN));
+		userConversations.add(createUserConversation(requesterUser, conversation, type == DIRECT ? NORMAL : ADMIN));
 
 		conversation.setUserConversations(userConversations);
 
@@ -61,45 +68,46 @@ public class ConversationServiceImpl implements ConversationService {
 	}
 
 	@Override
-	public Optional<Conversation> findConversationByPublicId(UUID conversationPublicId) {
-		return conversationRepository.findByPublicId(conversationPublicId);
+	public Conversation findConversationByPublicId(UUID conversationPublicId) {
+		return conversationRepository.findByPublicId(conversationPublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Conversation not found."));
 	}
 
 	@Override
-	public Conversation addUsersToConversation(Conversation conversation, Set<User> users) {
+	public List<UserConversation> addUsersToConversation(Conversation conversation, Set<User> users) {
 		Set<UserConversation> userConversations = users.stream()
 				.map(u -> createUserConversation(u, conversation, NORMAL))
 				.collect(Collectors.toSet());
 
 		conversation.getUserConversations().addAll(userConversations);
 
-		return conversationRepository.save(conversation);
+		return userConversationRepository.saveAll(userConversations);
 	}
 
 	@Override
-	public Conversation removeUserFromConversation(Conversation conversation, User user) {
+	public void removeUserFromConversation(Conversation conversation, User user) {
 		Set<UserConversation> userConversations = conversation.getUserConversations();
 
 		UserConversation userConversation = userConversations.stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
-				.orElseThrow(); // TODO REST Exception 404 not found in collection.
+				.orElseThrow(() -> new EntityNotFoundException("User not found in conversation."));
 
 		userConversations.remove(userConversation);
 
-		return conversationRepository.save(conversation);
+		userConversationRepository.save(userConversation);
 	}
 
 	@Override
-	public Conversation changeUserRoleInConversation(Conversation conversation, User user, UserConversationRole role) {
+	public UserConversation changeUserRoleInConversation(Conversation conversation, User user, UserConversationRole role) {
 		UserConversation userConversation = conversation.getUserConversations().stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
-				.orElseThrow(); // TODO REST Exception 404 not found in collection.
+				.orElseThrow(() -> new EntityNotFoundException("User not found in conversation."));
 
 		userConversation.setUserRole(role);
 
-		return conversationRepository.save(conversation);
+		return userConversationRepository.save(userConversation);
 	}
 
 	@Override
@@ -107,11 +115,28 @@ public class ConversationServiceImpl implements ConversationService {
 		return conversationRepository.findByUserConversationsUserOrderByLastMessageSentDesc(user, pageable);
 	}
 
-	private static UserConversation createUserConversation(User user, Conversation conversation, UserConversationRole role) {
+	@Override
+	public Conversation findDirectConversationBetweenTwoUsers(User firstUser, User secondUser) {
+		return findDirectConversationByUsers(firstUser, secondUser)
+				.orElseThrow(() -> new EntityNotFoundException("Conversation not found for given users."));
+	}
+
+	private UserConversation createUserConversation(User user, Conversation conversation, UserConversationRole role) {
 		return UserConversation.builder()
 				.user(user)
 				.conversation(conversation)
 				.userRole(role)
 				.build();
+	}
+
+	private Optional<Conversation> findDirectConversationByUsers(User firstUser, User secondUser) {
+		List<Conversation> directConversationsOfFirstUser = conversationRepository.findAllDirectConversationsByUser(firstUser);
+
+		return directConversationsOfFirstUser
+				.stream()
+				.filter(c -> c.getUserConversations()
+						.stream()
+						.anyMatch(uc -> Objects.equals(uc.getUser(), secondUser)))
+				.findFirst();
 	}
 }

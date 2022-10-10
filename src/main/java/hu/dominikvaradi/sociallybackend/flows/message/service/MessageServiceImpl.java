@@ -1,6 +1,8 @@
 package hu.dominikvaradi.sociallybackend.flows.message.service;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
@@ -17,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.EnumMap;
-import java.util.Map;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +28,12 @@ public class MessageServiceImpl implements MessageService {
 	private final MessageRepository messageRepository;
 	private final MessageReactionRepository messageReactionRepository;
 	private final ConversationRepository conversationRepository;
+
+	@Override
+	public Message findMessageByPublicId(UUID messagePublicId) {
+		return messageRepository.findByPublicId(messagePublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Message not found."));
+	}
 
 	@Override
 	public Message createMessage(Conversation conversation, User user, MessageCreateRequestDto messageCreateRequestDto) {
@@ -56,7 +64,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public MessageReaction addReactionToMessage(Message message, User user, Reaction reaction) {
 		if (messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction).isPresent()) {
-			throw new RuntimeException(); // TODO REST Exception - már létezik az entity, conflict lenne.
+			throw new EntityConflictException("Reaction already exists on message made by the user.");
 		}
 
 		MessageReaction newMessageReaction = MessageReaction.builder()
@@ -71,7 +79,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public void deleteReactionFromMessage(Message message, User user, Reaction reaction) {
 		MessageReaction messageReaction = messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction)
-				.orElseThrow(); // TODO REST Exception 404
+				.orElseThrow(() -> new EntityNotFoundException("Reaction not found on message made by the user."));
 
 		messageReactionRepository.delete(messageReaction);
 	}
@@ -82,8 +90,8 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	@Override
-	public Map<Reaction, Long> findAllReactionCountsByMessage(Message message) {
-		Map<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public EnumMap<Reaction, Long> findAllReactionCountsByMessage(Message message) {
+		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
 
 		for (Reaction reaction : Reaction.values()) {
 			reactionCount.put(reaction, messageReactionRepository.countByMessageAndReaction(message, reaction));

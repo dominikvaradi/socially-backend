@@ -15,7 +15,7 @@
 
     <changeSet author="dominikvaradi" id="schema-init">
         <createTable tableName="users">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"

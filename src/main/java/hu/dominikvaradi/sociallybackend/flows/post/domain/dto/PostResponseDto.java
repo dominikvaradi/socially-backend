@@ -21,6 +21,6 @@ public class PostResponseDto {
 	UUID addresseeId;
 	String addresseeName;
 	LocalDateTime created;
-	EnumMap<Reaction, Integer> reactionsCount;
-	int commentsCount;
+	EnumMap<Reaction, Long> reactionsCount;
+	long commentsCount;
 }

@@ -11,6 +11,5 @@ import java.util.UUID;
 @Getter
 @Setter
 public class ConversationAddUsersRequestDto {
-	private UUID conversationId;
 	private Set<UUID> memberUserIds;
 }

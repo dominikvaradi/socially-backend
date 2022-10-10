@@ -1,6 +1,9 @@
 package hu.dominikvaradi.sociallybackend.flows.post.service;
 
+import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
@@ -9,7 +12,6 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateRequestD
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
-import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,9 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.EnumMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,12 +30,13 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
 	private final PostRepository postRepository;
 	private final PostReactionRepository postReactionRepository;
-	private final UserRepository userRepository;
+	private final CommentRepository commentRepository;
 	private final FriendshipRepository friendshipRepository;
 
 	@Override
-	public Optional<Post> findPostByPublicId(UUID postPublicId) {
-		return postRepository.findByPublicId(postPublicId);
+	public Post findPostByPublicId(UUID postPublicId) {
+		return postRepository.findByPublicId(postPublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Post not found."));
 	}
 
 	@Override
@@ -70,10 +70,6 @@ public class PostServiceImpl implements PostService {
 
 	@Override
 	public Post updatePost(Post post, PostUpdateRequestDto postUpdateRequestDto) {
-		if (!Objects.equals(post.getPublicId(), postUpdateRequestDto.getId())) {
-			throw new RuntimeException(); // TODO REST Exception - bad request, rossz id-t rakott a request bodyba.
-		}
-
 		post.setHeader(postUpdateRequestDto.getHeader());
 		post.setContent(postUpdateRequestDto.getContent());
 
@@ -88,8 +84,7 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public PostReaction addReactionToPost(Post post, User user, Reaction reaction) {
 		if (postReactionRepository.findByUserAndPostAndReaction(user, post, reaction).isPresent()) {
-			throw new RuntimeException();
-			// TODO REST Exception - már létezik az entity, conflict lenne.
+			throw new EntityConflictException("Reaction already exists on post made by the user.");
 		}
 
 		PostReaction newCommentReaction = PostReaction.builder()
@@ -104,7 +99,7 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public void deleteReactionFromPost(Post post, User user, Reaction reaction) {
 		PostReaction postReaction = postReactionRepository.findByUserAndPostAndReaction(user, post, reaction)
-				.orElseThrow(); // TODO REST Exception 404
+				.orElseThrow(() -> new EntityNotFoundException("Reaction not found on post made by the user."));
 
 		postReactionRepository.delete(postReaction);
 	}
@@ -115,13 +110,18 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public Map<Reaction, Long> findAllReactionCountsByPost(Post post) {
-		Map<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public EnumMap<Reaction, Long> findAllReactionCountsByPost(Post post) {
+		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
 
 		for (Reaction reaction : Reaction.values()) {
 			reactionCount.put(reaction, postReactionRepository.countByPostAndReaction(post, reaction));
 		}
 
 		return reactionCount;
+	}
+
+	@Override
+	public long findCommentCountByPost(Post post) {
+		return commentRepository.countByPost(post);
 	}
 }

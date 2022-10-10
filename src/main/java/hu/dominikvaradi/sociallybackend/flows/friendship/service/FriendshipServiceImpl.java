@@ -1,5 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.friendship.service;
 
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_ENDED;
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_REQUEST_ACCEPTED;
@@ -20,6 +22,12 @@ import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.Fri
 @Service
 public class FriendshipServiceImpl implements FriendshipService {
 	private final FriendshipRepository friendshipRepository;
+
+	@Override
+	public Friendship findByPublicId(UUID friendshipPublicId) {
+		return friendshipRepository.findByPublicId(friendshipPublicId)
+				.orElseThrow(() -> new EntityNotFoundException("Friendship not found."));
+	}
 
 	@Override
 	public Page<Friendship> findAllIncomingFriendRequestsOfUser(User user, Pageable pageable) {

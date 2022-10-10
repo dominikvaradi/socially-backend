@@ -19,5 +19,5 @@ public class MessageResponseDto {
 	private UUID conversationId;
 	private String content;
 	private LocalDateTime created;
-	EnumMap<Reaction, Integer> reactionsCount;
+	EnumMap<Reaction, Long> reactionsCount;
 }
