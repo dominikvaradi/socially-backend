@@ -6,6 +6,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserUpdateRequestD
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Set;
 import java.util.UUID;
 
 public interface UserService {
@@ -18,4 +19,6 @@ public interface UserService {
 	Page<User> findAllUsersByName(String name, Pageable pageable);
 
 	Page<User> findAllFriendsByUser(User user, Pageable pageable);
+
+	Set<User> findAllUsersByPublicIds(Set<UUID> userPublicIds);
 }

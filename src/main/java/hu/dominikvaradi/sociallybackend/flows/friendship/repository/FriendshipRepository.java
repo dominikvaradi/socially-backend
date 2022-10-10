@@ -5,6 +5,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
@@ -28,4 +29,8 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
 	@Query("select f from Friendship f where (f.requester = ?1 or f.addressee = ?1) and f.status = 'FRIENDSHIP_REQUEST_ACCEPTED'")
 	Page<Friendship> findAllAcceptedByUser(User user, Pageable pageable);
+
+	@Modifying
+	@Query(value = "truncate table friendships restart identity cascade", nativeQuery = true)
+	void truncate();
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -71,5 +72,10 @@ public class UserServiceImpl implements UserService {
 	public Page<User> findAllFriendsByUser(User user, Pageable pageable) {
 		return friendshipRepository.findAllAcceptedByUser(user, pageable)
 				.map(fs -> fs.getRequester().equals(user) ? fs.getAddressee() : fs.getRequester());
+	}
+
+	@Override
+	public Set<User> findAllUsersByPublicIds(Set<UUID> userPublicIds) {
+		return userRepository.findAllByPublicIdIsIn(userPublicIds);
 	}
 }

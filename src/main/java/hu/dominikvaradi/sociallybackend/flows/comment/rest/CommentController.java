@@ -36,6 +36,7 @@ public class CommentController {
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
 		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(comment);
+		responseData.setReactionsCount(commentService.findAllReactionCountsByComment(comment));
 
 		return ResponseEntity.ok(responseData);
 	}
@@ -47,6 +48,7 @@ public class CommentController {
 		Comment updatedComment = commentService.updateComment(comment, commentUpdateRequestDto);
 
 		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(updatedComment);
+		responseData.setReactionsCount(commentService.findAllReactionCountsByComment(comment));
 
 		return ResponseEntity.ok(responseData);
 	}

@@ -17,7 +17,6 @@ import hu.dominikvaradi.sociallybackend.flows.message.service.MessageService;
 import hu.dominikvaradi.sociallybackend.flows.message.transformers.Message2MessageResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
-import liquibase.repackaged.org.apache.commons.lang3.NotImplementedException;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -33,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -55,7 +55,13 @@ public class ConversationController {
 	public ResponseEntity<ConversationResponseDto> createConversation(@RequestBody ConversationCreateRequestDto conversationCreateRequestDto) {
 		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
-		throw new NotImplementedException();
+		Set<User> otherUsers = userService.findAllUsersByPublicIds(conversationCreateRequestDto.getMemberUserIds());
+
+		Conversation createdConversation = conversationService.createConversation(currentUser, conversationCreateRequestDto.getType(), otherUsers);
+
+		ConversationResponseDto responseData = Conversation2ConversationResponseDtoTransformer.transform(createdConversation);
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@GetMapping("/api/conversations/{conversationId}")
@@ -70,8 +76,15 @@ public class ConversationController {
 	@PutMapping("/api/conversations/{conversationId}/users")
 	public ResponseEntity<Set<ConversationUserResponseDto>> addUsersToConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody ConversationAddUsersRequestDto conversationAddUsersRequestDto) {
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
-		
-		throw new NotImplementedException();
+
+		Set<User> otherUsers = userService.findAllUsersByPublicIds(conversationAddUsersRequestDto.getMemberUserIds());
+
+		Set<ConversationUserResponseDto> responseData = conversationService.addUsersToConversation(conversation, otherUsers)
+				.stream()
+				.map(UserConversation2ConversationUserResponseDtoTransformer::transform)
+				.collect(Collectors.toSet());
+
+		return ResponseEntity.ok(responseData);
 	}
 
 	@DeleteMapping("/api/conversations/{conversationId}/users/{userId}")

@@ -52,6 +52,8 @@ public class PostController {
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(post);
+		responseData.setReactionsCount(postService.findAllReactionCountsByPost(post));
+		responseData.setCommentsCount(postService.findCommentCountByPost(post));
 
 		return ResponseEntity.ok(responseData);
 	}
@@ -63,6 +65,8 @@ public class PostController {
 		Post updatedPost = postService.updatePost(post, postUpdateRequestDto);
 
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(updatedPost);
+		responseData.setReactionsCount(postService.findAllReactionCountsByPost(updatedPost));
+		responseData.setCommentsCount(postService.findCommentCountByPost(updatedPost));
 
 		return ResponseEntity.ok(responseData);
 	}
