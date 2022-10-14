@@ -16,7 +16,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import static javax.persistence.EnumType.STRING;
@@ -47,7 +47,7 @@ public class Friendship extends BaseDomain {
 	private FriendshipStatus status;
 
 	@Column(name = "status_last_modified", nullable = false)
-	private LocalDateTime statusLastModified;
+	private Instant statusLastModified;
 
 	@Override
 	public boolean equals(Object o) {

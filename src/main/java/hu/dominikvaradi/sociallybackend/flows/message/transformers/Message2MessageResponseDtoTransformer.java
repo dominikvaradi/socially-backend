@@ -4,6 +4,7 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageResponseDto;
 
+import java.time.ZoneId;
 import java.util.EnumMap;
 
 public class Message2MessageResponseDtoTransformer {
@@ -23,7 +24,7 @@ public class Message2MessageResponseDtoTransformer {
 				.userName(message.getUser().getName())
 				.conversationId(message.getConversation().getPublicId())
 				.content(message.getContent())
-				.created(message.getCreated())
+				.created(message.getCreated().atZone(ZoneId.systemDefault()))
 				.reactionsCount(emptyReactionCounts)
 				.build();
 	}

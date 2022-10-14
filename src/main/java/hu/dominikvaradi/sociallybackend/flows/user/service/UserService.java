@@ -21,4 +21,6 @@ public interface UserService {
 	Page<User> findAllFriendsByUser(User user, Pageable pageable);
 
 	Set<User> findAllUsersByPublicIds(Set<UUID> userPublicIds);
+
+	User findUserByEmail(String email);
 }

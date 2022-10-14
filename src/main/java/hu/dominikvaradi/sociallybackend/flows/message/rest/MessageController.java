@@ -9,12 +9,14 @@ import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageResponse
 import hu.dominikvaradi.sociallybackend.flows.message.service.MessageService;
 import hu.dominikvaradi.sociallybackend.flows.message.transformers.Message2MessageResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.message.transformers.MessageReaction2MessageReactionResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,8 +62,9 @@ public class MessageController {
 
 	@PostMapping("/api/messages/{messageId}/reactions")
 	public ResponseEntity<MessageReactionResponseDto> createReactionOnMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Message message = messageService.findMessageByPublicId(messagePublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		MessageReaction createdMessageReaction = messageService.addReactionToMessage(message, currentUser, reactionCreateRequestDto.getReaction());
 
@@ -72,8 +75,9 @@ public class MessageController {
 
 	@DeleteMapping("/api/messages/{messageId}/reactions/{reaction}")
 	public ResponseEntity<MessageReactionResponseDto> deleteReactionFromMessage(@PathVariable(name = "messageId") UUID messagePublicId, @PathVariable(name = "reaction") Reaction reaction) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Message message = messageService.findMessageByPublicId(messagePublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		messageService.deleteReactionFromMessage(message, currentUser, reaction);
 

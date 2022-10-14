@@ -46,10 +46,12 @@ public class Post extends BaseDomain {
 	private User addressee;
 
 	@ToString.Exclude
+	@Builder.Default
 	@OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
 	private Set<PostReaction> reactions = new HashSet<>();
 
 	@ToString.Exclude
+	@Builder.Default
 	@OneToMany(mappedBy = "post", cascade = ALL, orphanRemoval = true)
 	private Set<Comment> comments = new HashSet<>();
 

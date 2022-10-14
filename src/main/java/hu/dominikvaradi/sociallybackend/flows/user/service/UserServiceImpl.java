@@ -10,6 +10,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final FriendshipRepository friendshipRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public User findUserByPublicId(UUID userPublicId) {
@@ -39,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
 		User newUser = User.builder()
 				.email(userCreateRequestDto.getEmail())
-				.password(userCreateRequestDto.getPassword()) // TODO encrypt password
+				.password(passwordEncoder.encode(userCreateRequestDto.getPassword()))
 				.name(userCreateRequestDto.getName())
 				.birthDate(userCreateRequestDto.getBirthDate())
 				.birthCountry(userCreateRequestDto.getBirthCountry())
@@ -77,5 +79,11 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public Set<User> findAllUsersByPublicIds(Set<UUID> userPublicIds) {
 		return userRepository.findAllByPublicIdIsIn(userPublicIds);
+	}
+
+	@Override
+	public User findUserByEmail(String email) {
+		return userRepository.findByEmail(email)
+				.orElseThrow(() -> new EntityNotFoundException("User not found by email."));
 	}
 }

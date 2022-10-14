@@ -5,14 +5,12 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateRequestD
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.post.service.PostService;
 import hu.dominikvaradi.sociallybackend.flows.post.transformers.Post2PostResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
-import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateRequestDto;
-import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserProfileResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserSearchResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserUpdateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
-import hu.dominikvaradi.sociallybackend.flows.user.transformers.User2UserCreateResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.user.transformers.User2UserProfileResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.user.transformers.User2UserSearchResponseDtoTransformer;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +18,7 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,13 +39,6 @@ public class UserController {
 	public ResponseEntity<Page<UserSearchResponseDto>> findAllUsersByName(@RequestParam(name = "name", defaultValue = "") String name, @ParameterObject Pageable pageable) {
 		Page<UserSearchResponseDto> responseData = userService.findAllUsersByName(name, pageable)
 				.map(User2UserSearchResponseDtoTransformer::transform);
-
-		return ResponseEntity.ok(responseData);
-	}
-
-	@PostMapping("/api/users")
-	public ResponseEntity<UserCreateResponseDto> createUser(@RequestBody UserCreateRequestDto userCreateRequestDto) {
-		UserCreateResponseDto responseData = User2UserCreateResponseDtoTransformer.transform(userService.createUser(userCreateRequestDto));
 
 		return ResponseEntity.ok(responseData);
 	}
@@ -99,7 +91,8 @@ public class UserController {
 
 	@PostMapping("/api/users/{userId}/posts")
 	public ResponseEntity<PostResponseDto> createPostOnUser(@PathVariable(name = "userId") UUID userPublicId, @RequestBody PostCreateRequestDto postCreateRequestDto) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		User addresseeUser = userService.findUserByPublicId(userPublicId);
 
 		Post createdPost = postService.createPost(currentUser, addresseeUser, postCreateRequestDto);

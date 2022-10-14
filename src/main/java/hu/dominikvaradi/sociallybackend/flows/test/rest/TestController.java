@@ -1,8 +1,8 @@
-package hu.dominikvaradi.sociallybackend.flows.common.rest;
+package hu.dominikvaradi.sociallybackend.flows.test.rest;
 
 import hu.dominikvaradi.sociallybackend.flows.common.config.ApplicationProperties;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.RestApiException;
-import hu.dominikvaradi.sociallybackend.flows.common.service.TestDataService;
+import hu.dominikvaradi.sociallybackend.flows.test.service.TestDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +14,7 @@ public class TestController {
 	private final ApplicationProperties applicationProperties;
 	private final TestDataService testDataService;
 
-	@PostMapping("/api/common/test-data/reset")
+	@PostMapping("/api/test/reset-db")
 	public ResponseEntity<String> resetTestData() {
 		if (!applicationProperties.getEnvironment().isTestingEndpointsEnabled()) {
 			throw new RestApiException("Testing endpoints disabled.", (short) 403);

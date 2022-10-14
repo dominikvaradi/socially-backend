@@ -4,6 +4,7 @@ import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 
+import java.time.ZoneId;
 import java.util.EnumMap;
 
 public class Comment2CommentResponseDtoTransformer {
@@ -23,7 +24,7 @@ public class Comment2CommentResponseDtoTransformer {
 				.postId(comment.getPost().getPublicId())
 				.authorId(comment.getUser().getPublicId())
 				.authorName(comment.getUser().getName())
-				.created(comment.getCreated())
+				.created(comment.getCreated().atZone(ZoneId.systemDefault()))
 				.reactionsCount(emptyReactionCounts)
 				.build();
 	}

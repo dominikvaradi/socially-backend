@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_ENDED;
@@ -47,13 +47,13 @@ public class FriendshipServiceImpl implements FriendshipService {
 						.addressee(addresseeUser)
 						.lastStatusModifier(requesterUser)
 						.status(FRIENDSHIP_REQUEST_SENT)
-						.statusLastModified(LocalDateTime.now())
+						.statusLastModified(Instant.now())
 						.build());
 
 		if (friendship.getStatus() == FRIENDSHIP_ENDED) {
 			friendship.setStatus(FRIENDSHIP_REQUEST_SENT);
 			friendship.setLastStatusModifier(addresseeUser);
-			friendship.setStatusLastModified(LocalDateTime.now());
+			friendship.setStatusLastModified(Instant.now());
 		}
 
 		return friendshipRepository.save(friendship);
@@ -64,7 +64,7 @@ public class FriendshipServiceImpl implements FriendshipService {
 		if (friendship.getStatus() == FRIENDSHIP_REQUEST_SENT) {
 			friendship.setStatus(FRIENDSHIP_REQUEST_ACCEPTED);
 			friendship.setLastStatusModifier(user);
-			friendship.setStatusLastModified(LocalDateTime.now());
+			friendship.setStatusLastModified(Instant.now());
 		}
 
 		return friendshipRepository.save(friendship);
@@ -75,7 +75,7 @@ public class FriendshipServiceImpl implements FriendshipService {
 		if (friendship.getStatus() == FRIENDSHIP_REQUEST_SENT) {
 			friendship.setStatus(FRIENDSHIP_ENDED);
 			friendship.setLastStatusModifier(user);
-			friendship.setStatusLastModified(LocalDateTime.now());
+			friendship.setStatusLastModified(Instant.now());
 		}
 
 		return friendshipRepository.save(friendship);

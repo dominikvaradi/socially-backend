@@ -43,6 +43,7 @@ public class Comment extends BaseDomain {
 	private Post post;
 
 	@ToString.Exclude
+	@Builder.Default
 	@OneToMany(mappedBy = "comment", cascade = ALL, orphanRemoval = true)
 	private Set<CommentReaction> reactions = new HashSet<>();
 

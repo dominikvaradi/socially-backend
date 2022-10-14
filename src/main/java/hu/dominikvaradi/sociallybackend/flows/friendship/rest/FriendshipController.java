@@ -7,6 +7,7 @@ import hu.dominikvaradi.sociallybackend.flows.friendship.domain.dto.FriendReques
 import hu.dominikvaradi.sociallybackend.flows.friendship.service.FriendshipService;
 import hu.dominikvaradi.sociallybackend.flows.friendship.transformers.Friendship2FriendRequestIncomingResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.friendship.transformers.Friendship2FriendRequestOutgoingResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +33,8 @@ public class FriendshipController {
 
 	@GetMapping("/friendships/incoming")
 	public ResponseEntity<Page<FriendRequestIncomingResponseDto>> findAllIncomingFriendRequestsForCurrentUser(@ParameterObject Pageable pageable) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 
 		Page<FriendRequestIncomingResponseDto> responseData = friendshipService.findAllIncomingFriendRequestsOfUser(currentUser, pageable)
 				.map(fs -> Friendship2FriendRequestIncomingResponseDtoTransformer.transform(fs, currentUser));
@@ -41,8 +44,9 @@ public class FriendshipController {
 
 	@PostMapping("/friendships/incoming/{friendshipId}/accept")
 	public ResponseEntity<FriendRequestIncomingResponseDto> acceptIncomingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		Friendship acceptedFriendship = friendshipService.acceptFriendRequest(friendship, currentUser);
 
@@ -53,8 +57,9 @@ public class FriendshipController {
 
 	@DeleteMapping("/friendships/incoming/{friendshipId}")
 	public ResponseEntity<FriendRequestIncomingResponseDto> declineIncomingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		Friendship declinedFriendship = friendshipService.declineFriendRequest(friendship, currentUser);
 
@@ -65,7 +70,8 @@ public class FriendshipController {
 
 	@GetMapping("/friendships/outgoing")
 	public ResponseEntity<Page<FriendRequestOutgoingResponseDto>> findAllOutgoingFriendRequestsForCurrentUser(@ParameterObject Pageable pageable) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 
 		Page<FriendRequestOutgoingResponseDto> responseData = friendshipService.findAllOutgoingFriendRequestsOfUser(currentUser, pageable)
 				.map((fs -> Friendship2FriendRequestOutgoingResponseDtoTransformer.transform(fs, currentUser)));
@@ -75,7 +81,8 @@ public class FriendshipController {
 
 	@PostMapping("/friendships/outgoing")
 	public ResponseEntity<FriendRequestOutgoingResponseDto> createNewFriendRequest(@RequestBody FriendRequestCreateRequestDto friendRequestCreateRequestDto) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		User addresseeUser = userService.findUserByPublicId(friendRequestCreateRequestDto.getAddresseeUserId());
 
 		Friendship createdFriendship = friendshipService.createFriendRequest(currentUser, addresseeUser);
@@ -87,8 +94,9 @@ public class FriendshipController {
 
 	@DeleteMapping("/friendships/outgoing/{friendshipId}")
 	public ResponseEntity<FriendRequestOutgoingResponseDto> revokeOutgoingFriendRequest(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		Friendship revokedFriendship = friendshipService.declineFriendRequest(friendship, currentUser);
 

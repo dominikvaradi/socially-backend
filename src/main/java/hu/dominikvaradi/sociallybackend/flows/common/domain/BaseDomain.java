@@ -1,9 +1,11 @@
 package hu.dominikvaradi.sociallybackend.flows.common.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,9 +16,10 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Version;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
+@SuperBuilder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,16 +31,17 @@ public abstract class BaseDomain implements Serializable {
 	@Column(name = "id", nullable = false, unique = true)
 	private Long id;
 
+	@Builder.Default
 	@Column(name = "public_id", nullable = false, unique = true)
 	private UUID publicId = UUID.randomUUID();
 
 	@CreationTimestamp
 	@Column(name = "created", nullable = false)
-	private LocalDateTime created;
+	private Instant created;
 
 	@UpdateTimestamp
 	@Column(name = "updated", nullable = false)
-	private LocalDateTime updated;
+	private Instant updated;
 
 	@Version
 	@Column(name = "version", nullable = false)

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.EnumMap;
 import java.util.UUID;
 
@@ -18,6 +18,6 @@ public class MessageResponseDto {
 	private String userName;
 	private UUID conversationId;
 	private String content;
-	private LocalDateTime created;
+	private ZonedDateTime created;
 	EnumMap<Reaction, Long> reactionsCount;
 }

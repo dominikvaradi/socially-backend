@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 public class ConversationResponseDto {
 	private UUID id;
-	private LocalDateTime lastMessageSent;
+	private ZonedDateTime lastMessageSent;
 	private ConversationType type;
 	private Set<ConversationUserResponseDto> members;
 }

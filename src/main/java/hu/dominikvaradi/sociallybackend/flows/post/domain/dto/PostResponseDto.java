@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.EnumMap;
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ public class PostResponseDto {
 	String authorName;
 	UUID addresseeId;
 	String addresseeName;
-	LocalDateTime created;
+	ZonedDateTime created;
 	EnumMap<Reaction, Long> reactionsCount;
 	long commentsCount;
 }

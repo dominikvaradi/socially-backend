@@ -10,12 +10,14 @@ import hu.dominikvaradi.sociallybackend.flows.comment.transformers.Comment2Comme
 import hu.dominikvaradi.sociallybackend.flows.comment.transformers.CommentReaction2CommentReactionResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -74,8 +76,9 @@ public class CommentController {
 
 	@PostMapping("/api/comments/{commentId}/reactions")
 	public ResponseEntity<CommentReactionResponseDto> createReactionOnComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		CommentReaction createdCommentReaction = commentService.addReactionToComment(comment, currentUser, reactionCreateRequestDto.getReaction());
 
@@ -86,8 +89,9 @@ public class CommentController {
 
 	@DeleteMapping("/api/comments/{commentId}/reactions/{reaction}")
 	public ResponseEntity<Void> deleteReactionFromComment(@PathVariable(name = "commentId") UUID commentPublicId, @PathVariable(name = "reaction") Reaction reaction) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
 
 		commentService.deleteReactionFromComment(comment, currentUser, reaction);
 

@@ -17,7 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.UUID;
 
@@ -45,7 +45,7 @@ public class MessageServiceImpl implements MessageService {
 
 		message = messageRepository.save(message);
 
-		conversation.setLastMessageSent(LocalDateTime.now());
+		conversation.setLastMessageSent(Instant.now());
 		conversationRepository.save(conversation);
 
 		return message;

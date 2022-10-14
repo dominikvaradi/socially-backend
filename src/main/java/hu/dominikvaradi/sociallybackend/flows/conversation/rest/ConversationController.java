@@ -15,6 +15,7 @@ import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageCreateRe
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.message.service.MessageService;
 import hu.dominikvaradi.sociallybackend.flows.message.transformers.Message2MessageResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +45,8 @@ public class ConversationController {
 
 	@GetMapping("/api/conversations")
 	public ResponseEntity<Page<ConversationResponseDto>> findAllConversationsByCurrentUser(@ParameterObject Pageable pageable) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 
 		Page<ConversationResponseDto> responseData = conversationService.findAllConversationsByUser(currentUser, pageable)
 				.map(Conversation2ConversationResponseDtoTransformer::transform);
@@ -53,7 +56,8 @@ public class ConversationController {
 
 	@PostMapping("/api/conversations")
 	public ResponseEntity<ConversationResponseDto> createConversation(@RequestBody ConversationCreateRequestDto conversationCreateRequestDto) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 
 		Set<User> otherUsers = userService.findAllUsersByPublicIds(conversationCreateRequestDto.getMemberUserIds());
 
@@ -126,7 +130,8 @@ public class ConversationController {
 
 	@PostMapping("/api/conversations/{conversationId}/messages")
 	public ResponseEntity<MessageResponseDto> createMessageInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody MessageCreateRequestDto messageCreateRequestDto) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 
 		Message createdMessage = messageService.createMessage(conversation, currentUser, messageCreateRequestDto);

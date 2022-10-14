@@ -15,12 +15,14 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateRequestD
 import hu.dominikvaradi.sociallybackend.flows.post.service.PostService;
 import hu.dominikvaradi.sociallybackend.flows.post.transformers.Post2PostResponseDtoTransformer;
 import hu.dominikvaradi.sociallybackend.flows.post.transformers.PostReaction2PostReactionResponseDtoTransformer;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +41,8 @@ public class PostController {
 
 	@GetMapping("/api/posts")
 	public ResponseEntity<Page<PostResponseDto>> findAllPostsOnCurrentUsersFeed(@ParameterObject Pageable pageable) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 
 		Page<PostResponseDto> responseData = postService.findAllPostsForUsersFeed(currentUser, pageable)
 				.map(Post2PostResponseDtoTransformer::transform);
@@ -97,7 +100,8 @@ public class PostController {
 
 	@PostMapping("/api/posts/{postId}/comments")
 	public ResponseEntity<CommentResponseDto> createCommentOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody CommentCreateRequestDto commentCreateRequestDto) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		Comment createdComment = commentService.createComment(post, currentUser, commentCreateRequestDto);
@@ -119,7 +123,8 @@ public class PostController {
 
 	@PostMapping("/api/posts/{postId}/reactions")
 	public ResponseEntity<PostReactionResponseDto> createReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		PostReaction createdPostReaction = postService.addReactionToPost(post, currentUser, reactionCreateRequestDto.getReaction());
@@ -131,9 +136,10 @@ public class PostController {
 
 	@DeleteMapping("/api/posts/{postId}/reactions/{reaction}")
 	public ResponseEntity<Void> deleteReactionFromPost(@PathVariable(name = "postId") UUID postPublicId, @PathVariable(name = "reaction") Reaction reaction) {
-		User currentUser = null; // TODO RequestContext-ből kivesszük a current user-t.
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
-		
+
 		postService.deleteReactionFromPost(post, currentUser, reaction);
 
 		return ResponseEntity.noContent().build();

@@ -44,6 +44,7 @@ public class Message extends BaseDomain {
 	private Conversation conversation;
 
 	@ToString.Exclude
+	@Builder.Default
 	@OneToMany(mappedBy = "message", cascade = ALL, orphanRemoval = true)
 	private Set<MessageReaction> reactions = new HashSet<>();
 
