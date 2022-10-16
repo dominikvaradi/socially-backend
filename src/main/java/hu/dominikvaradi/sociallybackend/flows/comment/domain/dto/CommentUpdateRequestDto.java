@@ -7,5 +7,5 @@ import javax.validation.constraints.NotBlank;
 @Getter
 public class CommentUpdateRequestDto {
 	@NotBlank
-	String content;
+	private String content;
 }

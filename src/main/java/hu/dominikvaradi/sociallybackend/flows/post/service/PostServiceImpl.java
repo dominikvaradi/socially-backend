@@ -1,6 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.post.service;
 
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
@@ -18,7 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -110,14 +111,17 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public EnumMap<Reaction, Long> findAllReactionCountsByPost(Post post) {
-		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public Set<ReactionCountResponseDto> findAllReactionCountsByPost(Post post) {
+		Set<ReactionCountResponseDto> reactionCounts = new HashSet<>();
 
 		for (Reaction reaction : Reaction.values()) {
-			reactionCount.put(reaction, postReactionRepository.countByPostAndReaction(post, reaction));
+			reactionCounts.add(ReactionCountResponseDto.builder()
+					.reaction(reaction)
+					.count(postReactionRepository.countByPostAndReaction(post, reaction))
+					.build());
 		}
 
-		return reactionCount;
+		return reactionCounts;
 	}
 
 	@Override

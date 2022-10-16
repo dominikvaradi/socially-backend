@@ -5,14 +5,22 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Builder
 @Setter
 @Getter
 public class ConversationUserResponseDto {
+	@NotNull
 	private UUID conversationId;
+
+	@NotNull
 	private UUID userId;
+
+	@NotNull
 	private String userName;
+
+	@NotNull
 	private UserConversationRole userConversationRole;
 }

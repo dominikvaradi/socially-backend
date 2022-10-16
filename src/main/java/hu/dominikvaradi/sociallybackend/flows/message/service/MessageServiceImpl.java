@@ -1,5 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.message.service;
 
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
@@ -18,7 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -90,13 +92,16 @@ public class MessageServiceImpl implements MessageService {
 	}
 
 	@Override
-	public EnumMap<Reaction, Long> findAllReactionCountsByMessage(Message message) {
-		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public Set<ReactionCountResponseDto> findAllReactionCountsByMessage(Message message) {
+		Set<ReactionCountResponseDto> reactionCounts = new HashSet<>();
 
 		for (Reaction reaction : Reaction.values()) {
-			reactionCount.put(reaction, messageReactionRepository.countByMessageAndReaction(message, reaction));
+			reactionCounts.add(ReactionCountResponseDto.builder()
+					.reaction(reaction)
+					.count(messageReactionRepository.countByMessageAndReaction(message, reaction))
+					.build());
 		}
 
-		return reactionCount;
+		return reactionCounts;
 	}
 }

@@ -4,12 +4,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Builder
 @Getter
 @Setter
 public class UserSearchResponseDto {
-	UUID id;
-	String name;
+	@NotNull
+	private UUID id;
+
+	@NotNull
+	private String name;
 }

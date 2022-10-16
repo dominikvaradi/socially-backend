@@ -1,5 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.post.service;
 
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
@@ -9,7 +10,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.EnumMap;
+import java.util.Set;
 import java.util.UUID;
 
 public interface PostService {
@@ -31,7 +32,7 @@ public interface PostService {
 
 	Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable);
 
-	EnumMap<Reaction, Long> findAllReactionCountsByPost(Post post);
+	Set<ReactionCountResponseDto> findAllReactionCountsByPost(Post post);
 
 	long findCommentCountByPost(Post post);
 }

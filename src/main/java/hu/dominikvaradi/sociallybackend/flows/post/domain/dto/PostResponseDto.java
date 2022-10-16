@@ -1,26 +1,45 @@
 package hu.dominikvaradi.sociallybackend.flows.post.domain.dto;
 
-import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
-import java.util.EnumMap;
+import java.util.Set;
 import java.util.UUID;
 
 @Builder
 @Getter
 @Setter
 public class PostResponseDto {
-	UUID id;
-	String header;
-	String content;
-	UUID authorId;
-	String authorName;
-	UUID addresseeId;
-	String addresseeName;
-	ZonedDateTime created;
-	EnumMap<Reaction, Long> reactionsCount;
-	long commentsCount;
+	@NotNull
+	private UUID id;
+
+	private String header;
+
+	@NotNull
+	private String content;
+
+	@NotNull
+	private UUID authorId;
+
+	@NotNull
+	private String authorName;
+
+	@NotNull
+	private UUID addresseeId;
+
+	@NotNull
+	private String addresseeName;
+
+	@NotNull
+	private ZonedDateTime created;
+
+	@NotNull
+	private Set<ReactionCountResponseDto> reactionsCount;
+
+	@NotNull
+	private long commentsCount;
 }

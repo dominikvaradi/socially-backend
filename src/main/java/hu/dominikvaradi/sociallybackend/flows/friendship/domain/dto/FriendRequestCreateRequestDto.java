@@ -8,5 +8,5 @@ import java.util.UUID;
 @Getter
 public class FriendRequestCreateRequestDto {
 	@NotNull
-	UUID addresseeUserId;
+	private UUID addresseeUserId;
 }

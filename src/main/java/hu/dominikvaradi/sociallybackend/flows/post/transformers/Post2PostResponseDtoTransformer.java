@@ -1,11 +1,13 @@
 package hu.dominikvaradi.sociallybackend.flows.post.transformers;
 
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
 
 import java.time.ZoneId;
-import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Post2PostResponseDtoTransformer {
 	private Post2PostResponseDtoTransformer() {
@@ -13,9 +15,12 @@ public class Post2PostResponseDtoTransformer {
 	}
 
 	public static PostResponseDto transform(Post post) {
-		EnumMap<Reaction, Long> emptyReactionCounts = new EnumMap<>(Reaction.class);
+		Set<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new HashSet<>();
 		for (Reaction reaction : Reaction.values()) {
-			emptyReactionCounts.put(reaction, 0L);
+			emptyReactionCountResponseDtoList.add(ReactionCountResponseDto.builder()
+					.reaction(reaction)
+					.count(0L)
+					.build());
 		}
 
 		return PostResponseDto.builder()
@@ -27,7 +32,7 @@ public class Post2PostResponseDtoTransformer {
 				.addresseeId(post.getAddressee().getPublicId())
 				.addresseeName(post.getAddressee().getName())
 				.created(post.getCreated().atZone(ZoneId.systemDefault()))
-				.reactionsCount(emptyReactionCounts)
+				.reactionsCount(emptyReactionCountResponseDtoList)
 				.commentsCount(0)
 				.build();
 	}
