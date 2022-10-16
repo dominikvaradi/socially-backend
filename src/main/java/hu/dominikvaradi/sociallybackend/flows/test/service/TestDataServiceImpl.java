@@ -5,7 +5,7 @@ import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
-import hu.dominikvaradi.sociallybackend.flows.common.exception.RestApiException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.InternalServerErrorException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.UserConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
@@ -252,6 +252,6 @@ public class TestDataServiceImpl implements TestDataService {
 
 	private User findUserByName(String name) {
 		return userRepository.findByNameIgnoreCase(name)
-				.orElseThrow(() -> new RestApiException("Internal server error happened during generating test data: user not found with name: " + name, (short) 500));
+				.orElseThrow(() -> new InternalServerErrorException("INTERNAL_SERVER_ERROR"));
 	}
 }

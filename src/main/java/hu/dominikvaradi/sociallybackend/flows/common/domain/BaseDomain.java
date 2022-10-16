@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-@SuperBuilder
 @Getter
 @Setter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @MappedSuperclass

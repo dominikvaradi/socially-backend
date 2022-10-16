@@ -4,11 +4,11 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,7 +21,7 @@ import java.util.Objects;
 
 import static javax.persistence.EnumType.STRING;
 
-@Builder
+@SuperBuilder
 @Getter
 @Setter
 @AllArgsConstructor

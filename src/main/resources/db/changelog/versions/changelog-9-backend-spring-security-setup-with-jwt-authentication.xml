@@ -4,11 +4,57 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
-    <changeSet id="9-backend-spring-security-setup-with-jwt-authentication" author="dominikvaradi">
+    <changeSet id="9-backend-spring-security-setup-with-jwt-authentication-1" author="dominikvaradi">
         <addColumn tableName="users">
             <column name="role" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
+    </changeSet>
+
+    <changeSet id="9-backend-spring-security-setup-with-jwt-authentication-2" author="dominikvaradi">
+        <createTable tableName="refresh_tokens">
+            <column name="id" type="bigserial">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             primaryKeyName="refresh_tokens_id_pk"/>
+            </column>
+
+            <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="refresh_tokens_public_id_uc"/>
+            </column>
+
+            <column name="version" type="bigint" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="refresh_tokens_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="token" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
+                <constraints nullable="false"
+                             unique="true"
+                             uniqueConstraintName="refresh_tokens_token_uc"/>
+            </column>
+
+            <column name="expires_at" type="timestamp(6) without time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
     </changeSet>
 </databaseChangeLog>

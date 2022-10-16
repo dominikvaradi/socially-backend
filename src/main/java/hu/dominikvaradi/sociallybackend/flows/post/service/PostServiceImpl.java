@@ -36,7 +36,7 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public Post findPostByPublicId(UUID postPublicId) {
 		return postRepository.findByPublicId(postPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("Post not found."));
+				.orElseThrow(() -> new EntityNotFoundException("POST_NOT_FOUND"));
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public PostReaction addReactionToPost(Post post, User user, Reaction reaction) {
 		if (postReactionRepository.findByUserAndPostAndReaction(user, post, reaction).isPresent()) {
-			throw new EntityConflictException("Reaction already exists on post made by the user.");
+			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_POST_MADE_BY_USER");
 		}
 
 		PostReaction newCommentReaction = PostReaction.builder()
@@ -99,7 +99,7 @@ public class PostServiceImpl implements PostService {
 	@Override
 	public void deleteReactionFromPost(Post post, User user, Reaction reaction) {
 		PostReaction postReaction = postReactionRepository.findByUserAndPostAndReaction(user, post, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("Reaction not found on post made by the user."));
+				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
 
 		postReactionRepository.delete(postReaction);
 	}

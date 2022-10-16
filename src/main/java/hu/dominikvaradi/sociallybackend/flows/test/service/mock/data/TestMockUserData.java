@@ -4,8 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
+
+import static java.util.Arrays.asList;
 
 @Getter
 @AllArgsConstructor
@@ -16,7 +17,7 @@ public class TestMockUserData {
 	private final String city;
 
 	public static List<TestMockUserData> getTestMockUserDataList() {
-		return Arrays.asList(
+		return asList(
 				new TestMockUserData("Rick Sanchez", LocalDate.of(1952, 11, 11), "United States of America", "Unidentified City"),
 				new TestMockUserData("Morty Smith", LocalDate.of(2002, 9, 19), "United States of America", "Unidentified City"),
 				new TestMockUserData("Eren Yaeger", LocalDate.of(2007, 3, 30), "Eldia", "Shinganshina District"),

@@ -26,7 +26,7 @@ public class FriendshipServiceImpl implements FriendshipService {
 	@Override
 	public Friendship findByPublicId(UUID friendshipPublicId) {
 		return friendshipRepository.findByPublicId(friendshipPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("Friendship not found."));
+				.orElseThrow(() -> new EntityNotFoundException("FRIENDSHIP_NOT_FOUND"));
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package hu.dominikvaradi.sociallybackend.flows.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hu.dominikvaradi.sociallybackend.flows.common.config.ApplicationProperties;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiExceptionResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.security.exception.JwtAuthenticationFailedException;
 import hu.dominikvaradi.sociallybackend.flows.security.service.JwtUserDetailsService;
 import hu.dominikvaradi.sociallybackend.flows.security.service.JwtUtilService;
@@ -21,6 +21,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static java.util.Collections.singletonList;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,12 +59,12 @@ public class JwtAccessTokenFilter extends OncePerRequestFilter {
 				log.error("Internal server error happened while authenticating a user (validating access-token): " + e.getMessage(), e);
 
 				ObjectMapper mapper = new ObjectMapper();
-				RestApiExceptionResponseDto responseData = RestApiExceptionResponseDto.builder()
-						.httpStatusCode((short) 500)
-						.message("Internal server error happened while authenticating a user (validating access-token): " + e.getMessage())
+				EmptyRestApiResponseDto responseData = EmptyRestApiResponseDto.builder()
+						.httpStatusCode(INTERNAL_SERVER_ERROR.value())
+						.messages(singletonList("INTERNAL_SERVER_ERROR"))
 						.build();
 
-				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.setStatus(SC_INTERNAL_SERVER_ERROR);
 				response.setHeader("Content-Type", "application/json");
 				response.getWriter().write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseData));
 

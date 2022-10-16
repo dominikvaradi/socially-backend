@@ -32,7 +32,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public Message findMessageByPublicId(UUID messagePublicId) {
 		return messageRepository.findByPublicId(messagePublicId)
-				.orElseThrow(() -> new EntityNotFoundException("Message not found."));
+				.orElseThrow(() -> new EntityNotFoundException("MESSAGE_NOT_FOUND"));
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public MessageReaction addReactionToMessage(Message message, User user, Reaction reaction) {
 		if (messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction).isPresent()) {
-			throw new EntityConflictException("Reaction already exists on message made by the user.");
+			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_MESSAGE_MADE_BY_USER");
 		}
 
 		MessageReaction newMessageReaction = MessageReaction.builder()
@@ -79,7 +79,7 @@ public class MessageServiceImpl implements MessageService {
 	@Override
 	public void deleteReactionFromMessage(Message message, User user, Reaction reaction) {
 		MessageReaction messageReaction = messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("Reaction not found on message made by the user."));
+				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
 
 		messageReactionRepository.delete(messageReaction);
 	}

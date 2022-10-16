@@ -30,7 +30,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public Comment findCommentByPublicId(UUID commentPublicId) {
 		return commentRepository.findByPublicId(commentPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("Comment not found."));
+				.orElseThrow(() -> new EntityNotFoundException("COMMENT_NOT_FOUND"));
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public CommentReaction addReactionToComment(Comment comment, User user, Reaction reaction) {
 		if (commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction).isPresent()) {
-			throw new EntityConflictException("Reaction already exists on comment made by the user.");
+			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_COMMENT_MADE_BY_USER");
 		}
 
 		CommentReaction newCommentReaction = CommentReaction.builder()
@@ -79,7 +79,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public void deleteReactionFromComment(Comment comment, User user, Reaction reaction) {
 		CommentReaction commentReaction = commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("Comment reaction not found."));
+				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
 
 		commentReactionRepository.delete(commentReaction);
 	}

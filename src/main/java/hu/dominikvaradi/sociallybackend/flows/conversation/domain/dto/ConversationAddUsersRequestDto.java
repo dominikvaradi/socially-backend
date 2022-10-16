@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.Set;
 import java.util.UUID;
 
@@ -11,5 +12,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class ConversationAddUsersRequestDto {
+	@NotEmpty
 	private Set<UUID> memberUserIds;
 }

@@ -41,18 +41,18 @@ public class ConversationServiceImpl implements ConversationService {
 				.build();
 
 		if (otherUsers.contains(requesterUser)) {
-			throw new EntityUnprocessableException("The requester user cannot be in the other user members array.");
+			throw new EntityUnprocessableException("REQUESTER_USER_CANNOT_BE_IN_MEMBERS_ARRAY");
 		}
 
 		if (type == DIRECT) {
 			if (otherUsers.size() != 1) {
-				throw new EntityUnprocessableException("Direct conversations must contain only one user in the other user members array.");
+				throw new EntityUnprocessableException("DIRECT_CONVERSATIONS_MUST_CONTAIN_ONLY_ONE_ELEMENT_IN_MEMBERS_ARRAY");
 			}
 
 			User otherUser = otherUsers.stream().iterator().next();
 			Optional<Conversation> conversationBetweenTheUsers = findDirectConversationByUsers(requesterUser, otherUser);
 			if (conversationBetweenTheUsers.isPresent()) {
-				throw new EntityConflictException("The requester user and the given user already have an existing conversation.");
+				throw new EntityConflictException("REQUESTER_USER_AND_OTHER_USER_ALREADY_HAVE_CONVERSATION");
 			}
 		}
 
@@ -70,7 +70,7 @@ public class ConversationServiceImpl implements ConversationService {
 	@Override
 	public Conversation findConversationByPublicId(UUID conversationPublicId) {
 		return conversationRepository.findByPublicId(conversationPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("Conversation not found."));
+				.orElseThrow(() -> new EntityNotFoundException("CONVERSATION_NOT_FOUND"));
 	}
 
 	@Override
@@ -91,7 +91,7 @@ public class ConversationServiceImpl implements ConversationService {
 		UserConversation userConversation = userConversations.stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
-				.orElseThrow(() -> new EntityNotFoundException("User not found in conversation."));
+				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND_IN_CONVERSATION"));
 
 		userConversations.remove(userConversation);
 
@@ -103,7 +103,7 @@ public class ConversationServiceImpl implements ConversationService {
 		UserConversation userConversation = conversation.getUserConversations().stream()
 				.filter(uc -> uc.getUser().equals(user))
 				.findFirst()
-				.orElseThrow(() -> new EntityNotFoundException("User not found in conversation."));
+				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND_IN_CONVERSATION"));
 
 		userConversation.setUserRole(role);
 
@@ -118,7 +118,7 @@ public class ConversationServiceImpl implements ConversationService {
 	@Override
 	public Conversation findDirectConversationBetweenTwoUsers(User firstUser, User secondUser) {
 		return findDirectConversationByUsers(firstUser, secondUser)
-				.orElseThrow(() -> new EntityNotFoundException("Conversation not found for given users."));
+				.orElseThrow(() -> new EntityNotFoundException("CONVERSATION_NOT_FOUND"));
 	}
 
 	private UserConversation createUserConversation(User user, Conversation conversation, UserConversationRole role) {

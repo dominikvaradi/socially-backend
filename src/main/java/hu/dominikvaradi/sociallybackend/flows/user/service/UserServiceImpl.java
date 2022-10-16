@@ -29,14 +29,14 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User findUserByPublicId(UUID userPublicId) {
 		return userRepository.findByPublicId(userPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("User not found."));
+				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
 	}
 
 	@Override
 	public User createUser(UserCreateRequestDto userCreateRequestDto) {
 		Optional<User> existingUser = userRepository.findByEmail(userCreateRequestDto.getEmail());
 		if (existingUser.isPresent()) {
-			throw new EntityConflictException("Email is already taken by an other user.");
+			throw new EntityConflictException("USER_ALREADY_EXISTS_WITH_EMAIL");
 		}
 
 		User newUser = User.builder()
@@ -84,6 +84,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User findUserByEmail(String email) {
 		return userRepository.findByEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException("User not found by email."));
+				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
 	}
 }

@@ -43,6 +43,7 @@ public class WebSecurityConfig {
 
 		authenticationProvider.setUserDetailsService(jwtUserDetailsService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder());
+		authenticationProvider.setHideUserNotFoundExceptions(false);
 
 		return authenticationProvider;
 	}
@@ -57,6 +58,9 @@ public class WebSecurityConfig {
 				.antMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
 				.antMatchers(HttpMethod.POST, "/api/auth/refresh-token").permitAll()
 				.antMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+				.antMatchers("/api-docs/**").permitAll()
+				.antMatchers("/swagger-ui/**").permitAll()
+				.antMatchers("/swagger-ui.html").permitAll()
 				.anyRequest().authenticated();
 
 		http.authenticationProvider(authenticationProvider());
