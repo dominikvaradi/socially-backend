@@ -16,7 +16,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 	Optional<Friendship> findByPublicId(UUID friendshipPublicId);
 
 	@Query("select f from Friendship f where (f.requester = ?1 and f.addressee = ?2) or (f.requester = ?2 and f.addressee = ?1)")
-	Optional<Friendship> findAllByRequesterAndAddressee(User requesterUser, User addresseeUser);
+	Optional<Friendship> findByRequesterAndAddressee(User requesterUser, User addresseeUser);
 
 	@Query("select f from Friendship f where (f.requester = ?1 or f.addressee = ?1) and f.status = 'FRIENDSHIP_REQUEST_SENT' and f.lastStatusModifier = ?1 order by f.statusLastModified DESC")
 	Page<Friendship> findAllOutgoingByUserOrderByStatusLastModifiedDesc(User user, Pageable pageable);

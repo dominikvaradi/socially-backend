@@ -34,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
 		return commentRepository.findByPublicId(commentPublicId)
 				.orElseThrow(() -> new EntityNotFoundException("COMMENT_NOT_FOUND"));
 	}
-
+	
 	@Override
 	public Comment createComment(Post post, User user, CommentCreateRequestDto commentCreateRequestDto) {
 		Comment newComment = Comment.builder()

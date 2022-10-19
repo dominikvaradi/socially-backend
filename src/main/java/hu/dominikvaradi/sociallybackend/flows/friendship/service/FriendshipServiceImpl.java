@@ -41,7 +41,7 @@ public class FriendshipServiceImpl implements FriendshipService {
 
 	@Override
 	public Friendship createFriendRequest(User requesterUser, User addresseeUser) {
-		Friendship friendship = friendshipRepository.findAllByRequesterAndAddressee(requesterUser, addresseeUser)
+		Friendship friendship = friendshipRepository.findByRequesterAndAddressee(requesterUser, addresseeUser)
 				.orElse(Friendship.builder()
 						.requester(requesterUser)
 						.addressee(addresseeUser)
