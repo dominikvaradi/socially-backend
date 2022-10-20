@@ -1,5 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.test.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReactionRepository;
@@ -17,16 +19,20 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostRepository;
 import hu.dominikvaradi.sociallybackend.flows.security.domain.enums.Role;
-import hu.dominikvaradi.sociallybackend.flows.test.service.mock.data.TestMockUserData;
+import hu.dominikvaradi.sociallybackend.flows.test.domain.TestUser;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction.ANGRY;
@@ -73,24 +79,29 @@ public class TestDataServiceImpl implements TestDataService {
 	}
 
 	private void createTestUserData() {
-		List<TestMockUserData> userDataList = TestMockUserData.getTestMockUserDataList();
-		List<User> newUsers = new ArrayList<>();
+		try {
+			List<TestUser> testUsers = loadTestUsers();
 
-		for (TestMockUserData userData : userDataList) {
-			newUsers.add(User.builder()
-					.email(String.join(".", userData.getName().toLowerCase().split(" ")) + "@test.socially.bme.hu")
-					.password(passwordEncoder.encode("socially"))
-					.name(userData.getName())
-					.birthDate(userData.getBirthDate())
-					.birthCountry(userData.getCountry())
-					.birthCity(userData.getCity())
-					.currentCountry(userData.getCountry())
-					.currentCity(userData.getCity())
-					.role(Role.NORMAL_USER)
-					.build());
+			List<User> newUsers = new ArrayList<>();
+
+			for (TestUser userData : testUsers) {
+				newUsers.add(User.builder()
+						.email(String.join(".", userData.getName().toLowerCase().split(" ")) + "@test.socially.bme.hu")
+						.password(passwordEncoder.encode(userData.getPassword()))
+						.name(userData.getName())
+						.birthDate(userData.getBirthDate())
+						.birthCountry(userData.getCountry())
+						.birthCity(userData.getCity())
+						.currentCountry(userData.getCountry())
+						.currentCity(userData.getCity())
+						.role(Role.NORMAL_USER)
+						.build());
+			}
+
+			userRepository.saveAll(newUsers);
+		} catch (IOException e) {
+			throw new InternalServerErrorException("CANNOT_LOAD_TEST_USERS", e);
 		}
-
-		userRepository.saveAll(newUsers);
 	}
 
 	private void createTestFriendshipData() {
@@ -253,5 +264,14 @@ public class TestDataServiceImpl implements TestDataService {
 	private User findUserByName(String name) {
 		return userRepository.findByNameIgnoreCase(name)
 				.orElseThrow(() -> new InternalServerErrorException("INTERNAL_SERVER_ERROR"));
+	}
+
+	private List<TestUser> loadTestUsers() throws IOException {
+		Resource testUsersResource = new ClassPathResource("test/test-users.json");
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+
+		return Arrays.asList(mapper.readValue(testUsersResource.getInputStream(), TestUser[].class));
 	}
 }
