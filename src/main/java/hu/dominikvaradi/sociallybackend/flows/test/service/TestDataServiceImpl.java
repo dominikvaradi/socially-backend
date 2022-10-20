@@ -1,12 +1,13 @@
-package hu.dominikvaradi.sociallybackend.flows.common.service;
+package hu.dominikvaradi.sociallybackend.flows.test.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
-import hu.dominikvaradi.sociallybackend.flows.common.exception.RestApiException;
-import hu.dominikvaradi.sociallybackend.flows.common.service.testdata.TestUserData;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.InternalServerErrorException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.UserConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
@@ -17,15 +18,21 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.repository.PostRepository;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.enums.Role;
+import hu.dominikvaradi.sociallybackend.flows.test.domain.TestUser;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 
 import static hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction.ANGRY;
@@ -48,6 +55,7 @@ public class TestDataServiceImpl implements TestDataService {
 	private final UserConversationRepository userConversationRepository;
 	private final MessageRepository messageRepository;
 	private final MessageReactionRepository messageReactionRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public void truncateAllExistingData() {
@@ -71,23 +79,29 @@ public class TestDataServiceImpl implements TestDataService {
 	}
 
 	private void createTestUserData() {
-		List<TestUserData> userDataList = TestUserData.getTestUserDataList();
-		List<User> newUsers = new ArrayList<>();
+		try {
+			List<TestUser> testUsers = loadTestUsers();
 
-		for (TestUserData userData : userDataList) {
-			newUsers.add(User.builder()
-					.email(String.join(".", userData.getName().toLowerCase().split(" ")) + "@test.socially.bme.hu")
-					.password("socially")
-					.name(userData.getName())
-					.birthDate(userData.getBirthDate())
-					.birthCountry(userData.getCountry())
-					.birthCity(userData.getCity())
-					.currentCountry(userData.getCountry())
-					.currentCity(userData.getCity())
-					.build());
+			List<User> newUsers = new ArrayList<>();
+
+			for (TestUser userData : testUsers) {
+				newUsers.add(User.builder()
+						.email(String.join(".", userData.getName().toLowerCase().split(" ")) + "@test.socially.bme.hu")
+						.password(passwordEncoder.encode(userData.getPassword()))
+						.name(userData.getName())
+						.birthDate(userData.getBirthDate())
+						.birthCountry(userData.getCountry())
+						.birthCity(userData.getCity())
+						.currentCountry(userData.getCountry())
+						.currentCity(userData.getCity())
+						.role(Role.NORMAL_USER)
+						.build());
+			}
+
+			userRepository.saveAll(newUsers);
+		} catch (IOException e) {
+			throw new InternalServerErrorException("CANNOT_LOAD_TEST_USERS", e);
 		}
-
-		userRepository.saveAll(newUsers);
 	}
 
 	private void createTestFriendshipData() {
@@ -141,7 +155,7 @@ public class TestDataServiceImpl implements TestDataService {
 				.addressee(addressee)
 				.lastStatusModifier(addressee)
 				.status(FRIENDSHIP_REQUEST_ACCEPTED)
-				.statusLastModified(LocalDateTime.now())
+				.statusLastModified(Instant.now())
 				.build();
 	}
 
@@ -216,8 +230,6 @@ public class TestDataServiceImpl implements TestDataService {
 				.content(content)
 				.author(user)
 				.addressee(user)
-				.reactions(new HashSet<>())
-				.comments(new HashSet<>())
 				.build();
 	}
 
@@ -234,7 +246,6 @@ public class TestDataServiceImpl implements TestDataService {
 				.user(user)
 				.post(post)
 				.content(content)
-				.reactions(new HashSet<>())
 				.build();
 
 		post.getComments().add(createdComment);
@@ -252,6 +263,15 @@ public class TestDataServiceImpl implements TestDataService {
 
 	private User findUserByName(String name) {
 		return userRepository.findByNameIgnoreCase(name)
-				.orElseThrow(() -> new RestApiException("Internal server error happened during generating test data: user not found with name: " + name, (short) 500));
+				.orElseThrow(() -> new InternalServerErrorException("INTERNAL_SERVER_ERROR"));
+	}
+
+	private List<TestUser> loadTestUsers() throws IOException {
+		Resource testUsersResource = new ClassPathResource("test/test-users.json");
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.registerModule(new JavaTimeModule());
+
+		return Arrays.asList(mapper.readValue(testUsersResource.getInputStream(), TestUser[].class));
 	}
 }

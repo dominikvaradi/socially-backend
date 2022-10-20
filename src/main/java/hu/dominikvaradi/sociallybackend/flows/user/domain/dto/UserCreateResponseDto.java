@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -11,12 +12,23 @@ import java.util.UUID;
 @Getter
 @Setter
 public class UserCreateResponseDto {
+	@NotNull
 	private UUID id;
+
+	@NotNull
 	private String email;
+
+	@NotNull
 	private String name;
+
+	@NotNull
 	private LocalDate birthDate;
+
 	private String birthCountry;
+
 	private String birthCity;
+	
 	private String currentCountry;
+
 	private String currentCity;
 }

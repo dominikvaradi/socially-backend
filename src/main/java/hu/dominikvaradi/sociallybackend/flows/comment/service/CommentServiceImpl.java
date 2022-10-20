@@ -6,6 +6,7 @@ import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentCreateRe
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentUpdateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReactionRepository;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
@@ -17,7 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -30,9 +32,9 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public Comment findCommentByPublicId(UUID commentPublicId) {
 		return commentRepository.findByPublicId(commentPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("Comment not found."));
+				.orElseThrow(() -> new EntityNotFoundException("COMMENT_NOT_FOUND"));
 	}
-
+	
 	@Override
 	public Comment createComment(Post post, User user, CommentCreateRequestDto commentCreateRequestDto) {
 		Comment newComment = Comment.builder()
@@ -64,7 +66,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public CommentReaction addReactionToComment(Comment comment, User user, Reaction reaction) {
 		if (commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction).isPresent()) {
-			throw new EntityConflictException("Reaction already exists on comment made by the user.");
+			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_COMMENT_MADE_BY_USER");
 		}
 
 		CommentReaction newCommentReaction = CommentReaction.builder()
@@ -79,7 +81,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public void deleteReactionFromComment(Comment comment, User user, Reaction reaction) {
 		CommentReaction commentReaction = commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("Comment reaction not found."));
+				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
 
 		commentReactionRepository.delete(commentReaction);
 	}
@@ -90,13 +92,16 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public EnumMap<Reaction, Long> findAllReactionCountsByComment(Comment comment) {
-		EnumMap<Reaction, Long> reactionCount = new EnumMap<>(Reaction.class);
+	public Set<ReactionCountResponseDto> findAllReactionCountsByComment(Comment comment) {
+		Set<ReactionCountResponseDto> reactionCounts = new HashSet<>();
 
 		for (Reaction reaction : Reaction.values()) {
-			reactionCount.put(reaction, commentReactionRepository.countByCommentAndReaction(comment, reaction));
+			reactionCounts.add(ReactionCountResponseDto.builder()
+					.reaction(reaction)
+					.count(commentReactionRepository.countByCommentAndReaction(comment, reaction))
+					.build());
 		}
 
-		return reactionCount;
+		return reactionCounts;
 	}
 }

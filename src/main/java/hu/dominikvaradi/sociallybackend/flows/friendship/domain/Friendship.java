@@ -4,11 +4,11 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,12 +16,12 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import static javax.persistence.EnumType.STRING;
 
-@Builder
+@SuperBuilder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -47,7 +47,7 @@ public class Friendship extends BaseDomain {
 	private FriendshipStatus status;
 
 	@Column(name = "status_last_modified", nullable = false)
-	private LocalDateTime statusLastModified;
+	private Instant statusLastModified;
 
 	@Override
 	public boolean equals(Object o) {

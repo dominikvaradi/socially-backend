@@ -1,12 +1,15 @@
-package hu.dominikvaradi.sociallybackend.flows.common.rest;
+package hu.dominikvaradi.sociallybackend.flows.test.rest;
 
 import hu.dominikvaradi.sociallybackend.flows.common.config.ApplicationProperties;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.RestApiException;
-import hu.dominikvaradi.sociallybackend.flows.common.service.TestDataService;
+import hu.dominikvaradi.sociallybackend.flows.test.service.TestDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static java.util.Collections.singletonList;
 
 @RequiredArgsConstructor
 @RestController
@@ -14,16 +17,20 @@ public class TestController {
 	private final ApplicationProperties applicationProperties;
 	private final TestDataService testDataService;
 
-	@PostMapping("/api/common/test-data/reset")
-	public ResponseEntity<String> resetTestData() {
+	@PostMapping("/api/test/reset-db")
+	public ResponseEntity<EmptyRestApiResponseDto> resetTestData() {
 		if (!applicationProperties.getEnvironment().isTestingEndpointsEnabled()) {
-			throw new RestApiException("Testing endpoints disabled.", (short) 403);
+			throw new RestApiException("TESTING_ENDPOINTS_DISABLED", (short) 403);
 		}
 
 		testDataService.truncateAllExistingData();
 
 		testDataService.createTestData();
 
-		return ResponseEntity.ok("Test data successfully reseted.");
+		EmptyRestApiResponseDto responseData = EmptyRestApiResponseDto.builder()
+				.messages(singletonList("Test data successfully reseted."))
+				.build();
+
+		return ResponseEntity.ok(responseData);
 	}
 }

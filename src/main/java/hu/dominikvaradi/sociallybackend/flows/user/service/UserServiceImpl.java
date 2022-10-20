@@ -10,6 +10,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,23 +24,24 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final FriendshipRepository friendshipRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Override
 	public User findUserByPublicId(UUID userPublicId) {
 		return userRepository.findByPublicId(userPublicId)
-				.orElseThrow(() -> new EntityNotFoundException("User not found."));
+				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
 	}
 
 	@Override
 	public User createUser(UserCreateRequestDto userCreateRequestDto) {
 		Optional<User> existingUser = userRepository.findByEmail(userCreateRequestDto.getEmail());
 		if (existingUser.isPresent()) {
-			throw new EntityConflictException("Email is already taken by an other user.");
+			throw new EntityConflictException("USER_ALREADY_EXISTS_WITH_EMAIL");
 		}
 
 		User newUser = User.builder()
 				.email(userCreateRequestDto.getEmail())
-				.password(userCreateRequestDto.getPassword()) // TODO encrypt password
+				.password(passwordEncoder.encode(userCreateRequestDto.getPassword()))
 				.name(userCreateRequestDto.getName())
 				.birthDate(userCreateRequestDto.getBirthDate())
 				.birthCountry(userCreateRequestDto.getBirthCountry())

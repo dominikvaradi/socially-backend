@@ -10,9 +10,17 @@ spring:
     password: socially
   jpa:
     open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 springdoc:
   api-docs:
     path: '/api-docs'
 application:
   environment:
-    testing-endpoints-enabled: true
+    testing-endpoints-enabled: false
+  jwt:
+    prefix: Bearer
+    secret: ZDUyNjc5MTMtNGE5Yi00OTNjLWJjNmUtY2IxMzUzYTllNzU5LTA2ZjJmNmMyLTU4NDQtNDYzMi04Mjk2LTg4OWZkNTU3MTlkNA==
+    access-token-expiration-in-millis: 300000 # 5 minutes in millis
+    refresh-token-expiration-in-millis: 1209600000 # 14 days in millis

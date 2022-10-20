@@ -2,16 +2,19 @@ package hu.dominikvaradi.sociallybackend.flows.user.domain;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.BaseDomain;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
+import hu.dominikvaradi.sociallybackend.flows.security.domain.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.Hibernate;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDate;
@@ -19,7 +22,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@Builder
+import static javax.persistence.EnumType.STRING;
+
+@SuperBuilder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -52,7 +57,12 @@ public class User extends BaseDomain {
 	@Column(name = "current_city")
 	private String currentCity;
 
+	@Enumerated(STRING)
+	@Column(name = "role", nullable = false)
+	private Role role;
+
 	@ToString.Exclude
+	@Builder.Default
 	@OneToMany(mappedBy = "user")
 	private Set<UserConversation> userConversations = new HashSet<>();
 

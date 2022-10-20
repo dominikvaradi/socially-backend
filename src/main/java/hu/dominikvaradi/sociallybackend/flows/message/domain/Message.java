@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.Hibernate;
 
 import javax.persistence.Column;
@@ -23,7 +24,7 @@ import java.util.Set;
 
 import static javax.persistence.CascadeType.ALL;
 
-@Builder
+@SuperBuilder
 @Getter
 @Setter
 @AllArgsConstructor
@@ -44,6 +45,7 @@ public class Message extends BaseDomain {
 	private Conversation conversation;
 
 	@ToString.Exclude
+	@Builder.Default
 	@OneToMany(mappedBy = "message", cascade = ALL, orphanRemoval = true)
 	private Set<MessageReaction> reactions = new HashSet<>();
 
