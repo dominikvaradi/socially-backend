@@ -80,10 +80,4 @@ public class UserServiceImpl implements UserService {
 	public Set<User> findAllUsersByPublicIds(Set<UUID> userPublicIds) {
 		return userRepository.findAllByPublicIdIsIn(userPublicIds);
 	}
-
-	@Override
-	public User findUserByEmail(String email) {
-		return userRepository.findByEmail(email)
-				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
-	}
 }

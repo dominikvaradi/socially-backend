@@ -1,5 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.security.config;
 
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
+import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
@@ -8,8 +10,11 @@ import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
+import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole.ADMIN;
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_REQUEST_ACCEPTED;
 
 public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot implements MethodSecurityExpressionOperations {
@@ -25,16 +30,84 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 		this.friendshipRepository = friendshipRepository;
 	}
 
-	public boolean isUserFriendOf(User otherUser) {
+	public boolean isAuthenticationUserFriendOf(User otherUser) {
 		User user = ((JwtUserDetails) this.getPrincipal()).getUser();
 
-		return areUsersFriends(user, otherUser);
+		return isUserFriendOf(user, otherUser);
 	}
 
-	public boolean areUsersFriends(User user1, User user2) {
-		Optional<Friendship> friendship = friendshipRepository.findByRequesterAndAddressee(user1, user2);
+	public boolean isUserFriendOf(User user, User otherUser) {
+		Optional<Friendship> friendship = friendshipRepository.findByRequesterAndAddressee(user, otherUser);
 
 		return friendship.isPresent() && friendship.get().getStatus() == FRIENDSHIP_REQUEST_ACCEPTED;
+	}
+
+	public boolean isAuthenticationUserEqualsOrFriendOf(User otherUser) {
+		User user = ((JwtUserDetails) this.getPrincipal()).getUser();
+
+		return isUserEqualsOrFriendOf(user, otherUser);
+	}
+
+	public boolean isUserEqualsOrFriendOf(User user, User otherUser) {
+		if (Objects.equals(user, otherUser)) {
+			return true;
+		}
+
+		Optional<Friendship> friendship = friendshipRepository.findByRequesterAndAddressee(user, otherUser);
+
+		return friendship.isPresent() && friendship.get().getStatus() == FRIENDSHIP_REQUEST_ACCEPTED;
+	}
+
+	public boolean isAuthenticationUserFriendOfOtherUsers(Set<User> otherUsers) {
+		User user = ((JwtUserDetails) this.getPrincipal()).getUser();
+
+		return isUserFriendOfOtherUsers(user, otherUsers);
+	}
+
+	public boolean isUserFriendOfOtherUsers(User user, Set<User> otherUsers) {
+		if (otherUsers.isEmpty()) {
+			return false;
+		}
+
+		for (User u : otherUsers) {
+			if (!isUserFriendOf(user, u)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public boolean isAuthenticationUserMemberOfConversation(Conversation conversation) {
+		User user = ((JwtUserDetails) this.getPrincipal()).getUser();
+
+		return isUserMemberOfConversation(user, conversation);
+	}
+
+	public boolean isUserMemberOfConversation(User user, Conversation conversation) {
+		for (UserConversation uc : conversation.getUserConversations()) {
+			if (Objects.equals(uc.getUser(), user)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean isAuthenticationUserAdminOfConversation(Conversation conversation) {
+		User user = ((JwtUserDetails) this.getPrincipal()).getUser();
+
+		return isUserAdminOfConversation(user, conversation);
+	}
+
+	public boolean isUserAdminOfConversation(User user, Conversation conversation) {
+		for (UserConversation uc : conversation.getUserConversations()) {
+			if (Objects.equals(uc.getUser(), user) && uc.getUserRole() == ADMIN) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override

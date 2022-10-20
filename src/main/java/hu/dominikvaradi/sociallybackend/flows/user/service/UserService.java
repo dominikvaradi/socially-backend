@@ -5,6 +5,7 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateRequestD
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Set;
 import java.util.UUID;
@@ -14,6 +15,7 @@ public interface UserService {
 
 	User createUser(UserCreateRequestDto userCreateRequestDto);
 
+	@PreAuthorize("authentication.principal.user == #user")
 	User updateUser(User user, UserUpdateRequestDto userUpdateDto);
 
 	Page<User> findAllUsersByName(String name, Pageable pageable);
@@ -21,6 +23,4 @@ public interface UserService {
 	Page<User> findAllFriendsByUser(User user, Pageable pageable);
 
 	Set<User> findAllUsersByPublicIds(Set<UUID> userPublicIds);
-
-	User findUserByEmail(String email);
 }

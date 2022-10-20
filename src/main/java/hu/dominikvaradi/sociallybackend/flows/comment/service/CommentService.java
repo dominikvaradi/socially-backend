@@ -17,13 +17,13 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface CommentService {
-	@PostAuthorize("authentication.principal.user == returnObject.post.addressee || isUserFriendOf(returnObject.post.addressee)")
+	@PostAuthorize("isAuthenticationUserEqualsOrFriendOf(returnObject.post.addressee)")
 	Comment findCommentByPublicId(UUID commentPublicId);
 
-	@PreAuthorize("user == #post.addressee || areUsersFriends(#user, #post.addressee)")
+	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #post.addressee) ")
 	Comment createComment(Post post, User user, CommentCreateRequestDto commentCreateRequestDto);
-
-	@PreAuthorize("authentication.principal.user == #post.addressee || isUserFriendOf(#post.addressee)")
+	
+	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#post.addressee)")
 	Page<Comment> findAllCommentsByPost(Post post, Pageable pageable);
 
 	@PreAuthorize("authentication.principal.user == #comment.user")
@@ -32,15 +32,15 @@ public interface CommentService {
 	@PreAuthorize("authentication.principal.user == #comment.user || authentication.principal.user == #comment.post.addressee")
 	void deleteComment(Comment comment);
 
-	@PreAuthorize("#user == #comment.post.addressee || areUsersFriends(#user, #comment.post.addressee)")
+	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #comment.post.addressee)")
 	CommentReaction addReactionToComment(Comment comment, User user, Reaction reaction);
 
-	@PreAuthorize("#user == #comment.post.addressee || areUsersFriends(#user, #comment.post.addressee)")
+	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #comment.post.addressee)")
 	void deleteReactionFromComment(Comment comment, User user, Reaction reaction);
 
-	@PreAuthorize("authentication.principal.user == #comment.post.addressee || isUserFriendOf(#comment.post.addressee)")
+	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
 	Page<CommentReaction> findAllReactionsByComment(Comment comment, Pageable pageable);
 
-	@PreAuthorize("authentication.principal.user == #comment.post.addressee || isUserFriendOf(#comment.post.addressee)")
+	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
 	Set<ReactionCountResponseDto> findAllReactionCountsByComment(Comment comment);
 }

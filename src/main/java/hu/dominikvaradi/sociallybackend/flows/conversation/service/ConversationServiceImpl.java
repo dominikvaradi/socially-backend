@@ -75,7 +75,12 @@ public class ConversationServiceImpl implements ConversationService {
 
 	@Override
 	public List<UserConversation> addUsersToConversation(Conversation conversation, Set<User> users) {
+		if (conversation.getType() == DIRECT) {
+			throw new EntityUnprocessableException("DIRECT_CONVERSATIONS_CANNOT_BE_EXPANDED");
+		}
+
 		Set<UserConversation> userConversations = users.stream()
+				.filter(u -> findUserConversationInConversationByUser(u, conversation).isEmpty())
 				.map(u -> createUserConversation(u, conversation, NORMAL))
 				.collect(Collectors.toSet());
 
@@ -86,23 +91,25 @@ public class ConversationServiceImpl implements ConversationService {
 
 	@Override
 	public void removeUserFromConversation(Conversation conversation, User user) {
-		Set<UserConversation> userConversations = conversation.getUserConversations();
-
-		UserConversation userConversation = userConversations.stream()
-				.filter(uc -> uc.getUser().equals(user))
-				.findFirst()
+		UserConversation userConversation = findUserConversationInConversationByUser(user, conversation)
 				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND_IN_CONVERSATION"));
 
-		userConversations.remove(userConversation);
+		long adminCount = conversation.getUserConversations().stream()
+				.filter(uc -> uc.getUserRole() == ADMIN)
+				.count();
+
+		if (adminCount == 1) {
+			throw new EntityUnprocessableException("CONVERSATIONS_MUST_HAVE_AN_ADMIN");
+		}
+
+		conversation.getUserConversations().remove(userConversation);
 
 		userConversationRepository.save(userConversation);
 	}
 
 	@Override
 	public UserConversation changeUserRoleInConversation(Conversation conversation, User user, UserConversationRole role) {
-		UserConversation userConversation = conversation.getUserConversations().stream()
-				.filter(uc -> uc.getUser().equals(user))
-				.findFirst()
+		UserConversation userConversation = findUserConversationInConversationByUser(user, conversation)
 				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND_IN_CONVERSATION"));
 
 		userConversation.setUserRole(role);
@@ -113,12 +120,6 @@ public class ConversationServiceImpl implements ConversationService {
 	@Override
 	public Page<Conversation> findAllConversationsByUser(User user, Pageable pageable) {
 		return conversationRepository.findByUserConversationsUserOrderByLastMessageSentDesc(user, pageable);
-	}
-
-	@Override
-	public Conversation findDirectConversationBetweenTwoUsers(User firstUser, User secondUser) {
-		return findDirectConversationByUsers(firstUser, secondUser)
-				.orElseThrow(() -> new EntityNotFoundException("CONVERSATION_NOT_FOUND"));
 	}
 
 	private UserConversation createUserConversation(User user, Conversation conversation, UserConversationRole role) {
@@ -138,5 +139,15 @@ public class ConversationServiceImpl implements ConversationService {
 						.stream()
 						.anyMatch(uc -> Objects.equals(uc.getUser(), secondUser)))
 				.findFirst();
+	}
+
+	private Optional<UserConversation> findUserConversationInConversationByUser(User user, Conversation conversation) {
+		for (UserConversation uc : conversation.getUserConversations()) {
+			if (Objects.equals(uc.getUser(), user)) {
+				return Optional.of(uc);
+			}
+		}
+
+		return Optional.empty();
 	}
 }

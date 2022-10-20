@@ -1,6 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.friendship.service;
 
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
+import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityUnprocessableException;
 import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_ENDED;
@@ -41,6 +43,10 @@ public class FriendshipServiceImpl implements FriendshipService {
 
 	@Override
 	public Friendship createFriendRequest(User requesterUser, User addresseeUser) {
+		if (Objects.equals(requesterUser, addresseeUser)) {
+			throw new EntityUnprocessableException("CANNOT_SEND_FRIEND_REQUEST_TO_SELF");
+		}
+
 		Friendship friendship = friendshipRepository.findByRequesterAndAddressee(requesterUser, addresseeUser)
 				.orElse(Friendship.builder()
 						.requester(requesterUser)
