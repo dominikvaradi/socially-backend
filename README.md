@@ -20,8 +20,28 @@ Alternatively you can use the [Spring Boot Maven plugin](https://docs.spring.io/
 mvn spring-boot:run
 ```
 
-## Endpoints
+## Endpoint documentation
 
 There is an openapi generation configured in Spring, which you can download from [http://localhost:8080/api-docs](http://localhost:8080/api-docs) if you are running the application.
 
 You can see the REST Api documentation via Swagger UI, on [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) if you are running the application.
+
+## Test data generation
+
+You can enable test data generation endpoint inside `application.yaml`
+
+```
+application:
+  environment:
+    testing-endpoints-enabled: true
+```
+
+Make sure you set the `testing-endpoints-enabled` environment variable to `false` if you're making a production ready build.
+
+After setting the `testing-endpoints-enabled` environment variable to `true`, you will have access for the following endpoint, which will reset the database and fill it up with some test data:
+
+```
+POST /api/test/reset-db
+
+no parameters, or request body required.
+```
