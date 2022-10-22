@@ -4,28 +4,27 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+    <changeSet id="9-backend-spring-security-setup-with-jwt-authentication-1" author="dominikvaradi">
+        <addColumn tableName="users">
+            <column name="role" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
 
-    <property name="uuid_type" value="uuid" dbms="postgresql"/>
-    <property name="uuid_type" value="uniqueidentifier" dbms="mssql"/>
-    <property name="uuid_type" value="RAW(16)" dbms="oracle"/>
-
-    <property name="uuid_generate" value="uuid_generate_v4()" dbms="postgresql"/>
-    <property name="uuid_generate" value="NEWID()" dbms="mssql"/>
-    <property name="uuid_generate" value="sys_guid()" dbms="oracle"/>
-
-    <changeSet author="dominikvaradi" id="schema-init">
-        <createTable tableName="users">
+    <changeSet id="9-backend-spring-security-setup-with-jwt-authentication-2" author="dominikvaradi">
+        <createTable tableName="refresh_tokens">
             <column name="id" type="bigserial">
                 <constraints nullable="false"
                              unique="true"
                              primaryKey="true"
-                             primaryKeyName="users_id_pk"/>
+                             primaryKeyName="refresh_tokens_id_pk"/>
             </column>
 
             <column name="public_id" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
                 <constraints nullable="false"
                              unique="true"
-                             uniqueConstraintName="users_public_id_uc"/>
+                             uniqueConstraintName="refresh_tokens_public_id_uc"/>
             </column>
 
             <column name="version" type="bigint" defaultValue="1">
@@ -40,29 +39,22 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="email" type="varchar(255)">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="refresh_tokens_user_id_fk"
+                             referencedTableName="users"
+                             referencedColumnNames="id"/>
+            </column>
+
+            <column name="token" type="${uuid_type}" defaultValueComputed="${uuid_generate}">
                 <constraints nullable="false"
                              unique="true"
-                             uniqueConstraintName="users_email_uc"/>
+                             uniqueConstraintName="refresh_tokens_token_uc"/>
             </column>
 
-            <column name="password" type="varchar(255)">
+            <column name="expires_at" type="timestamp(6) without time zone">
                 <constraints nullable="false"/>
             </column>
-
-            <column name="name" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="birth_date" type="date"/>
-
-            <column name="birth_country" type="varchar(255)"/>
-
-            <column name="birth_city" type="varchar(255)"/>
-
-            <column name="current_country" type="varchar(255)"/>
-
-            <column name="current_city" type="varchar(255)"/>
         </createTable>
     </changeSet>
 </databaseChangeLog>

@@ -1,0 +1,14 @@
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+application:
+  environment:
+    testing-endpoints-enabled: true
+  jwt:
+    prefix: Bearer
+    secret: ZDUyNjc5MTMtNGE5Yi00OTNjLWJjNmUtY2IxMzUzYTllNzU5LTA2ZjJmNmMyLTU4NDQtNDYzMi04Mjk2LTg4OWZkNTU3MTlkNA==
+    access-token-expiration-in-millis: 60000 # 1 minutes in millis
+    refresh-token-expiration-in-millis: 180000 # 3 minutes in millis
