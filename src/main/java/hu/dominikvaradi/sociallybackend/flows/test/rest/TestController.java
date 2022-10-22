@@ -4,6 +4,7 @@ import hu.dominikvaradi.sociallybackend.flows.common.config.ApplicationPropertie
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.RestApiException;
 import hu.dominikvaradi.sociallybackend.flows.test.service.TestDataService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static java.util.Collections.singletonList;
 
+@Hidden
 @RequiredArgsConstructor
 @RestController
 public class TestController {
