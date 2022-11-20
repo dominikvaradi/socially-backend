@@ -40,7 +40,7 @@ import java.util.UUID;
 public class CommentController {
 	private final CommentService commentService;
 
-	@GetMapping("/api/comments/{commentId}")
+	@GetMapping("/comments/{commentId}")
 	public ResponseEntity<RestApiResponseDto<CommentResponseDto>> findCommentByPublicId(@PathVariable(name = "commentId") UUID commentPublicId) {
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
@@ -50,7 +50,7 @@ public class CommentController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PutMapping("/api/comments/{commentId}")
+	@PutMapping("/comments/{commentId}")
 	public ResponseEntity<RestApiResponseDto<CommentResponseDto>> updateComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody CommentUpdateRequestDto commentUpdateRequestDto) {
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
@@ -62,7 +62,7 @@ public class CommentController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/comments/{commentId}")
+	@DeleteMapping("/comments/{commentId}")
 	public ResponseEntity<EmptyRestApiResponseDto> deleteComment(@PathVariable(name = "commentId") UUID commentPublicId) {
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
@@ -71,7 +71,7 @@ public class CommentController {
 		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 
-	@GetMapping("/api/comments/{commentId}/reactions")
+	@GetMapping("/comments/{commentId}/reactions")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<CommentReactionResponseDto>>> findAllReactionsByComment(@PathVariable(name = "commentId") UUID commentPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -85,7 +85,7 @@ public class CommentController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/comments/{commentId}/reactions")
+	@PostMapping("/comments/{commentId}/reactions")
 	public ResponseEntity<RestApiResponseDto<CommentReactionResponseDto>> createReactionOnComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
@@ -98,7 +98,7 @@ public class CommentController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/comments/{commentId}/reactions/{reaction}")
+	@DeleteMapping("/comments/{commentId}/reactions/{reaction}")
 	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromComment(@PathVariable(name = "commentId") UUID commentPublicId, @PathVariable(name = "reaction") Reaction reaction) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
