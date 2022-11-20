@@ -1,118 +1,135 @@
 [
   {
-    "name": "Rick Sanchez",
+    "firstName": "Rick",
+    "lastName": "Sanchez",
     "birthDate": "1952-11-11",
     "country": "United States of America",
     "city": "Unidentified City",
     "password": "socially"
   },
   {
-    "name": "Morty Smith",
+    "firstName": "Morty",
+    "lastName": "Smith",
     "birthDate": "2002-09-19",
     "country": "United States of America",
     "city": "Unidentified City",
     "password": "socially"
   },
   {
-    "name": "Eren Yaeger",
+    "firstName": "Eren",
+    "lastName": "Yaeger",
     "birthDate": "2007-03-30",
     "country": "Eldia",
     "city": "Shinganshina District",
     "password": "socially"
   },
   {
-    "name": "Mikasa Ackerman",
+    "firstName": "Mikasa",
+    "lastName": "Ackerman",
     "birthDate": "2007-02-10",
     "country": "Eldia",
     "city": "Shinganshina District",
     "password": "socially"
   },
   {
-    "name": "Levi Ackerman",
+    "firstName": "Levi",
+    "lastName": "Ackerman",
     "birthDate": "1991-12-25",
     "country": "Eldia",
     "city": "Underground City",
     "password": "socially"
   },
   {
-    "name": "Naruto Uzumaki",
+    "firstName": "Naruto",
+    "lastName": "Uzumaki",
     "birthDate": "2004-10-10",
     "country": "Land of Fire",
     "city": "Konoha",
     "password": "socially"
   },
   {
-    "name": "Hinata Hyuga",
+    "firstName": "Hinata",
+    "lastName": "Hyuga",
     "birthDate": "2004-12-27",
     "country": "Land of Fire",
     "city": "Konoha",
     "password": "socially"
   },
   {
-    "name": "Sakura Haruno",
+    "firstName": "Sakura",
+    "lastName": "Haruno",
     "birthDate": "2004-03-28",
     "country": "Land of Fire",
     "city": "Konoha",
     "password": "socially"
   },
   {
-    "name": "Itachi Uchiha",
+    "firstName": "Itachi",
+    "lastName": "Uchiha",
     "birthDate": "1998-06-09",
     "country": "Land of Fire",
     "city": "Konoha",
     "password": "socially"
   },
   {
-    "name": "Sasuke Uchiha",
+    "firstName": "Sasuke",
+    "lastName": "Uchiha",
     "birthDate": "2004-07-23",
     "country": "Land of Fire",
     "city": "Konoha",
     "password": "socially"
   },
   {
-    "name": "Tanjiro Kamado",
+    "firstName": "Tanjiro",
+    "lastName": "Kamado",
     "birthDate": "2006-07-14",
     "country": "Japan",
     "city": "Okutama",
     "password": "socially"
   },
   {
-    "name": "Nezuko Kamado",
+    "firstName": "Nezuko",
+    "lastName": "Kamado",
     "birthDate": "2007-12-28",
     "country": "Japan",
     "city": "Okutama",
     "password": "socially"
   },
   {
-    "name": "Kanao Tsuyuri",
+    "firstName": "Kanao",
+    "lastName": "Tsuyuri",
     "birthDate": "2006-06-19",
     "country": "Japan",
     "city": "Mukojima",
     "password": "socially"
   },
   {
-    "name": "Zenitsu Agatsuma",
+    "firstName": "Zenitsu",
+    "lastName": "Agatsuma",
     "birthDate": "2006-09-03",
     "country": "Japan",
     "city": "Shinjuku",
     "password": "socially"
   },
   {
-    "name": "Takumi Fujiwara",
+    "firstName": "Takumi",
+    "lastName": "Fujiwara",
     "birthDate": "2002-12-25",
     "country": "Japan",
     "city": "Mountain Akina",
     "password": "socially"
   },
   {
-    "name": "Ryosuke Takahashi",
+    "firstName": "Ryosuke",
+    "lastName": "Takahashi",
     "birthDate": "1999-12-25",
     "country": "Japan",
     "city": "Mountain Akagi",
     "password": "socially"
   },
   {
-    "name": "Mako Sato",
+    "firstName": "Mako",
+    "lastName": "Sato",
     "birthDate": "2000-12-25",
     "country": "Japan",
     "city": "Mountain Usui",

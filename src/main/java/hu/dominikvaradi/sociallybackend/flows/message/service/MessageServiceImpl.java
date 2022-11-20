@@ -88,7 +88,7 @@ public class MessageServiceImpl implements MessageService {
 
 	@Override
 	public Page<MessageReaction> findAllReactionsByMessage(Message message, Pageable pageable) {
-		return messageReactionRepository.findAllByMessageOrderByUserNameAsc(message, pageable);
+		return messageReactionRepository.findAllByMessageOrderByUserLastNameAsc(message, pageable);
 	}
 
 	@Override

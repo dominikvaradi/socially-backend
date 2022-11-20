@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface PostReactionRepository extends JpaRepository<PostReaction, Long> {
-	Page<PostReaction> findByPostOrderByUserNameAsc(Post post, Pageable pageable);
+	Page<PostReaction> findByPostOrderByUserLastNameAsc(Post post, Pageable pageable);
 
 	Optional<PostReaction> findByUserAndPostAndReaction(User user, Post post, Reaction reaction);
 

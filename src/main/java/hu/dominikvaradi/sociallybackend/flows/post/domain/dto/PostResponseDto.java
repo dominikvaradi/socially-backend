@@ -26,13 +26,19 @@ public class PostResponseDto {
 	private UUID authorId;
 
 	@NotNull
-	private String authorName;
+	private String authorFirstName;
+
+	@NotNull
+	private String authorLastName;
 
 	@NotNull
 	private UUID addresseeId;
 
 	@NotNull
-	private String addresseeName;
+	private String addresseeFirstName;
+
+	@NotNull
+	private String addresseeLastName;
 
 	@NotNull
 	private ZonedDateTime created;

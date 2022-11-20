@@ -107,7 +107,7 @@ public class PostServiceImpl implements PostService {
 
 	@Override
 	public Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable) {
-		return postReactionRepository.findByPostOrderByUserNameAsc(post, pageable);
+		return postReactionRepository.findByPostOrderByUserLastNameAsc(post, pageable);
 	}
 
 	@Override

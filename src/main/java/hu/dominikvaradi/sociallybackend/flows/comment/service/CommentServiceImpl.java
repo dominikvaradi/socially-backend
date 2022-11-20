@@ -88,7 +88,7 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	public Page<CommentReaction> findAllReactionsByComment(Comment comment, Pageable pageable) {
-		return commentReactionRepository.findAllByCommentOrderByUserNameAsc(comment, pageable);
+		return commentReactionRepository.findAllByCommentOrderByUserLastNameAsc(comment, pageable);
 	}
 
 	@Override

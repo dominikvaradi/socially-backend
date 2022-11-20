@@ -18,5 +18,8 @@ public class FriendRequestOutgoingResponseDto {
 	private UUID addresseeUserId;
 
 	@NotNull
-	private String addresseeUserName;
+	private String addresseeUserFirstName;
+
+	@NotNull
+	private String addresseeUserLastName;
 }

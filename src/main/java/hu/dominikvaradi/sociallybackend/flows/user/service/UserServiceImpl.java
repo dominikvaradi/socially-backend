@@ -44,7 +44,8 @@ public class UserServiceImpl implements UserService {
 		User newUser = User.builder()
 				.email(userCreateRequestDto.getEmail())
 				.password(passwordEncoder.encode(userCreateRequestDto.getPassword()))
-				.name(userCreateRequestDto.getName())
+				.firstName(userCreateRequestDto.getFirstName())
+				.lastName(userCreateRequestDto.getLastName())
 				.birthDate(userCreateRequestDto.getBirthDate())
 				.birthCountry(userCreateRequestDto.getBirthCountry())
 				.birthCity(userCreateRequestDto.getBirthCity())
@@ -58,7 +59,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User updateUser(User user, UserUpdateRequestDto userUpdateDto) {
-		user.setName(userUpdateDto.getName());
+		user.setFirstName(userUpdateDto.getFirstName());
+		user.setLastName(userUpdateDto.getLastName());
 		user.setBirthDate(userUpdateDto.getBirthDate());
 		user.setBirthCountry(userUpdateDto.getBirthCountry());
 		user.setBirthCity(userUpdateDto.getBirthCity());

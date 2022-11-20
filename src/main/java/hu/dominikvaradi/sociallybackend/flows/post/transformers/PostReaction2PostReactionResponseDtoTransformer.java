@@ -12,7 +12,8 @@ public class PostReaction2PostReactionResponseDtoTransformer {
 		return PostReactionResponseDto.builder()
 				.postId(postReaction.getPost().getPublicId())
 				.userId(postReaction.getUser().getPublicId())
-				.userName(postReaction.getUser().getName())
+				.userFirstName(postReaction.getUser().getFirstName())
+				.userLastName(postReaction.getUser().getLastName())
 				.reaction(postReaction.getReaction())
 				.build();
 	}

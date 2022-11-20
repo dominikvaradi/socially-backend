@@ -12,7 +12,8 @@ public class UserConversation2ConversationUserResponseDtoTransformer {
 		return ConversationUserResponseDto.builder()
 				.conversationId(userConversation.getConversation().getPublicId())
 				.userId(userConversation.getUser().getPublicId())
-				.userName(userConversation.getUser().getName())
+				.userFirstName(userConversation.getUser().getFirstName())
+				.userLastName(userConversation.getUser().getLastName())
 				.userConversationRole(userConversation.getUserRole())
 				.build();
 	}

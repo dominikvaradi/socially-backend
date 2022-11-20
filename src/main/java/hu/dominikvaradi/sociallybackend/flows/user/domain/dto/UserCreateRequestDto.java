@@ -17,7 +17,10 @@ public class UserCreateRequestDto {
 	private String password;
 
 	@NotBlank
-	private String name;
+	private String firstName;
+
+	@NotBlank
+	private String lastName;
 
 	@NotNull
 	private LocalDate birthDate;

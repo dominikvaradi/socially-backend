@@ -54,7 +54,8 @@ public class AuthController {
 
 		UserCreateResponseDto responseData = UserCreateResponseDto.builder()
 				.userId(createdUser.getPublicId())
-				.userName(createdUser.getName())
+				.userFirstName(createdUser.getFirstName())
+				.userLastName(createdUser.getLastName())
 				.accessToken(accessToken)
 				.refreshToken(refreshTokenResponseData)
 				.build();
@@ -86,7 +87,8 @@ public class AuthController {
 
 		UserLoginResponseDto responseData = UserLoginResponseDto.builder()
 				.userId(user.getPublicId())
-				.userName(user.getName())
+				.userFirstName(user.getFirstName())
+				.userLastName(user.getLastName())
 				.accessToken(accessToken)
 				.refreshToken(refreshTokenResponseData)
 				.build();
