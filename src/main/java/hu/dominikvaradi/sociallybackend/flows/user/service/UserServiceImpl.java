@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import static hu.dominikvaradi.sociallybackend.flows.security.domain.enums.Role.NORMAL_USER;
+
 @RequiredArgsConstructor
 @Transactional
 @Service
@@ -48,6 +50,7 @@ public class UserServiceImpl implements UserService {
 				.birthCity(userCreateRequestDto.getBirthCity())
 				.currentCountry(userCreateRequestDto.getCurrentCountry())
 				.currentCity(userCreateRequestDto.getCurrentCity())
+				.role(NORMAL_USER)
 				.build();
 
 		return userRepository.save(newUser);

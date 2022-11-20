@@ -1,11 +1,11 @@
 package hu.dominikvaradi.sociallybackend.flows.user.domain.dto;
 
+import hu.dominikvaradi.sociallybackend.flows.security.domain.dto.TokenResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Builder
@@ -13,22 +13,14 @@ import java.util.UUID;
 @Setter
 public class UserCreateResponseDto {
 	@NotNull
-	private UUID id;
+	private UUID userId;
 
 	@NotNull
-	private String email;
+	private String userName;
 
 	@NotNull
-	private String name;
+	private TokenResponseDto accessToken;
 
 	@NotNull
-	private LocalDate birthDate;
-
-	private String birthCountry;
-
-	private String birthCity;
-	
-	private String currentCountry;
-
-	private String currentCity;
+	private TokenResponseDto refreshToken;
 }

@@ -18,9 +18,6 @@ public class UserLoginResponseDto {
 	private String userName;
 
 	@NotNull
-	private String userEmail;
-
-	@NotNull
 	private TokenResponseDto accessToken;
 
 	@NotNull

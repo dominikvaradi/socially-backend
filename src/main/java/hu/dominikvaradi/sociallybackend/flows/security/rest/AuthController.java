@@ -15,7 +15,6 @@ import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.dto.UserCreateResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.user.service.UserService;
-import hu.dominikvaradi.sociallybackend.flows.user.transformers.User2UserCreateResponseDtoTransformer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +40,24 @@ public class AuthController {
 
 	@PostMapping("/api/auth/register")
 	public ResponseEntity<RestApiResponseDto<UserCreateResponseDto>> createUser(@RequestBody UserCreateRequestDto userCreateRequestDto) {
-		UserCreateResponseDto responseData = User2UserCreateResponseDtoTransformer.transform(userService.createUser(userCreateRequestDto));
+		User createdUser = userService.createUser(userCreateRequestDto);
 
-		log.debug("User successfully created with email: " + responseData.getEmail());
+		TokenResponseDto accessToken = jwtUtilService.createJwtAccessTokenForUser(createdUser);
+
+		RefreshToken createdRefreshToken = refreshTokenService.createRefreshToken(createdUser);
+		TokenResponseDto refreshTokenResponseData = TokenResponseDto.builder()
+				.token(createdRefreshToken.getToken().toString())
+				.expiresAt(createdRefreshToken.getExpiresAt().atZone(ZoneId.systemDefault()))
+				.build();
+
+		log.debug("User successfully created and logged in with email: " + createdUser.getEmail());
+
+		UserCreateResponseDto responseData = UserCreateResponseDto.builder()
+				.userId(createdUser.getPublicId())
+				.userName(createdUser.getName())
+				.accessToken(accessToken)
+				.refreshToken(refreshTokenResponseData)
+				.build();
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -73,7 +87,6 @@ public class AuthController {
 		UserLoginResponseDto responseData = UserLoginResponseDto.builder()
 				.userId(user.getPublicId())
 				.userName(user.getName())
-				.userEmail(user.getEmail())
 				.accessToken(accessToken)
 				.refreshToken(refreshTokenResponseData)
 				.build();
