@@ -13,7 +13,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TestUser {
-	private String name;
+	private String firstName;
+	private String lastName;
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate birthDate;
 	private String country;

@@ -28,7 +28,8 @@ public class Comment2CommentResponseDtoTransformer {
 				.content(comment.getContent())
 				.postId(comment.getPost().getPublicId())
 				.authorId(comment.getUser().getPublicId())
-				.authorName(comment.getUser().getName())
+				.authorFirstName(comment.getUser().getFirstName())
+				.authorLastName(comment.getUser().getLastName())
 				.created(comment.getCreated().atZone(ZoneId.systemDefault()))
 				.reactionsCount(emptyReactionCountResponseDtoList)
 				.build();

@@ -11,7 +11,8 @@ public class User2UserProfileResponseDtoTransformer {
 	public static UserProfileResponseDto transform(User user) {
 		return UserProfileResponseDto.builder()
 				.id(user.getPublicId())
-				.name(user.getName())
+				.firstName(user.getFirstName())
+				.lastName(user.getLastName())
 				.birthDate(user.getBirthDate())
 				.birthCountry(user.getBirthCountry())
 				.birthCity(user.getBirthCity())

@@ -17,7 +17,8 @@ public class Friendship2FriendRequestOutgoingResponseDtoTransformer {
 		return FriendRequestOutgoingResponseDto.builder()
 				.id(friendship.getPublicId())
 				.addresseeUserId(addresseeUser.getPublicId())
-				.addresseeUserName(addresseeUser.getName())
+				.addresseeUserFirstName(addresseeUser.getFirstName())
+				.addresseeUserLastName(addresseeUser.getLastName())
 				.build();
 	}
 }

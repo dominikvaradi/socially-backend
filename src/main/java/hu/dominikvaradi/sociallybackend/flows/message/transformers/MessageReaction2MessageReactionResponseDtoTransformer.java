@@ -12,7 +12,8 @@ public class MessageReaction2MessageReactionResponseDtoTransformer {
 		return MessageReactionResponseDto.builder()
 				.messageId(messageReaction.getMessage().getPublicId())
 				.userId(messageReaction.getUser().getPublicId())
-				.userName(messageReaction.getUser().getName())
+				.userFirstName(messageReaction.getUser().getFirstName())
+				.userLastName(messageReaction.getUser().getLastName())
 				.reaction(messageReaction.getReaction())
 				.build();
 	}

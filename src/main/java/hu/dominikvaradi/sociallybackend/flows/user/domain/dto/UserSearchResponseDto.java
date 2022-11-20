@@ -15,5 +15,8 @@ public class UserSearchResponseDto {
 	private UUID id;
 
 	@NotNull
-	private String name;
+	private String firstName;
+
+	@NotNull
+	private String lastName;
 }

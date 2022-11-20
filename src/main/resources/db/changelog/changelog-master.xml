@@ -7,4 +7,5 @@
     <include relativeToChangelogFile="true" file="versions/changelog-schema-init.xml"/>
     <include relativeToChangelogFile="true" file="versions/changelog-3-backend-data-access-layer-setup.xml"/>
     <include relativeToChangelogFile="true" file="versions/changelog-9-backend-spring-security-setup-with-jwt-authentication.xml"/>
+    <include relativeToChangelogFile="true" file="versions/changelog-17-be-fullname-helyett-firstname-és-lastname-bevezetése-user-nél.xml"/>
 </databaseChangeLog>

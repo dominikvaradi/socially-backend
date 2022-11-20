@@ -27,7 +27,9 @@ public class CommentResponseDto {
 	private UUID authorId;
 
 	@NotNull
-	private String authorName;
+	private String authorFirstName;
+
+	private String authorLastName;
 
 	@NotNull
 	private ZonedDateTime created;

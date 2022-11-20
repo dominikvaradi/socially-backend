@@ -16,7 +16,10 @@ public class UserProfileResponseDto {
 	private UUID id;
 
 	@NotNull
-	private String name;
+	private String firstName;
+
+	@NotNull
+	private String lastName;
 
 	@NotNull
 	private LocalDate birthDate;

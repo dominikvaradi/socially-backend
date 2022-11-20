@@ -19,7 +19,10 @@ public class ConversationUserResponseDto {
 	private UUID userId;
 
 	@NotNull
-	private String userName;
+	private String userFirstName;
+
+	@NotNull
+	private String userLastName;
 
 	@NotNull
 	private UserConversationRole userConversationRole;

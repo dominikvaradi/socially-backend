@@ -16,7 +16,10 @@ public class UserCreateResponseDto {
 	private UUID userId;
 
 	@NotNull
-	private String userName;
+	private String userFirstName;
+
+	@NotNull
+	private String userLastName;
 
 	@NotNull
 	private TokenResponseDto accessToken;

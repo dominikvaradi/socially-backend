@@ -11,7 +11,8 @@ public class User2UserSearchResponseDtoTransformer {
 	public static UserSearchResponseDto transform(User user) {
 		return UserSearchResponseDto.builder()
 				.id(user.getPublicId())
-				.name(user.getName())
+				.firstName(user.getFirstName())
+				.lastName(user.getLastName())
 				.build();
 	}
 }

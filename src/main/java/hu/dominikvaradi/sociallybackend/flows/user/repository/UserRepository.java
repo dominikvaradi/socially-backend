@@ -16,8 +16,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Optional<User> findByEmail(String email);
 
+	@Query("select u from User u where upper(concat(u.firstName, ' ', u.lastName)) like upper(concat('%', ?1, '%')) or upper(concat(u.lastName, ' ', u.firstName)) like upper(concat('%', ?1, '%'))")
 	Page<User> findByNameContainsIgnoreCase(String name, Pageable pageable);
 
+	@Query("select u from User u where upper(concat(u.firstName, ' ', u.lastName)) = upper(?1) or upper(concat(u.lastName, ' ', u.firstName)) = upper(?1)")
 	Optional<User> findByNameIgnoreCase(String name);
 
 	Set<User> findAllByPublicIdIsIn(Iterable<UUID> publicIds);

@@ -12,7 +12,8 @@ public class CommentReaction2CommentReactionResponseDto {
 		return CommentReactionResponseDto.builder()
 				.commentId(commentReaction.getComment().getPublicId())
 				.userId(commentReaction.getUser().getPublicId())
-				.userName(commentReaction.getUser().getName())
+				.userFirstName(commentReaction.getUser().getFirstName())
+				.userLastName(commentReaction.getUser().getLastName())
 				.reaction(commentReaction.getReaction())
 				.build();
 	}
