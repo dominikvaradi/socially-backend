@@ -38,7 +38,7 @@ public class AuthController {
 	private final JwtUtilService jwtUtilService;
 	private final AuthenticationManager authenticationManager;
 
-	@PostMapping("/api/auth/register")
+	@PostMapping("/auth/register")
 	public ResponseEntity<RestApiResponseDto<UserCreateResponseDto>> createUser(@RequestBody UserCreateRequestDto userCreateRequestDto) {
 		User createdUser = userService.createUser(userCreateRequestDto);
 
@@ -62,7 +62,7 @@ public class AuthController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/auth/login")
+	@PostMapping("/auth/login")
 	public ResponseEntity<RestApiResponseDto<UserLoginResponseDto>> loginUser(@RequestBody UserLoginRequestDto userLoginRequestDto) {
 		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userLoginRequestDto.getEmail(), userLoginRequestDto.getPassword()));
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -94,7 +94,7 @@ public class AuthController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/auth/refresh-token")
+	@PostMapping("/auth/refresh-token")
 	public ResponseEntity<RestApiResponseDto<RefreshTokenResponseDto>> refreshToken(@RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
 		Optional<RefreshToken> foundRefreshToken = refreshTokenService.findRefreshTokenByToken(refreshTokenRequestDto.getRefreshToken());
 		if (foundRefreshToken.isEmpty()) {

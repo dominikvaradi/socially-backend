@@ -46,7 +46,7 @@ public class PostController {
 	private final PostService postService;
 	private final CommentService commentService;
 
-	@GetMapping("/api/posts")
+	@GetMapping("/posts")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostResponseDto>>> findAllPostsOnCurrentUsersFeed(@ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -61,7 +61,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/posts/{postId}")
+	@GetMapping("/posts/{postId}")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> findPostByPublicId(@PathVariable(name = "postId") UUID postPublicId) {
 		Post post = postService.findPostByPublicId(postPublicId);
 
@@ -72,7 +72,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PutMapping("/api/posts/{postId}")
+	@PutMapping("/posts/{postId}")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> updatePost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
 		Post post = postService.findPostByPublicId(postPublicId);
 
@@ -85,7 +85,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/posts/{postId}")
+	@DeleteMapping("/posts/{postId}")
 	public ResponseEntity<EmptyRestApiResponseDto> deletePost(@PathVariable(name = "postId") UUID postPublicId) {
 		Post post = postService.findPostByPublicId(postPublicId);
 
@@ -94,7 +94,7 @@ public class PostController {
 		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 
-	@GetMapping("/api/posts/{postId}/comments")
+	@GetMapping("/posts/{postId}/comments")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<CommentResponseDto>>> findAllCommentsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -113,7 +113,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/posts/{postId}/comments")
+	@PostMapping("/posts/{postId}/comments")
 	public ResponseEntity<RestApiResponseDto<CommentResponseDto>> createCommentOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody CommentCreateRequestDto commentCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
@@ -126,7 +126,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/posts/{postId}/reactions")
+	@GetMapping("/posts/{postId}/reactions")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostReactionResponseDto>>> findAllReactionsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -140,7 +140,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/posts/{postId}/reactions")
+	@PostMapping("/posts/{postId}/reactions")
 	public ResponseEntity<RestApiResponseDto<PostReactionResponseDto>> createReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
@@ -153,7 +153,7 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/posts/{postId}/reactions/{reaction}")
+	@DeleteMapping("/posts/{postId}/reactions/{reaction}")
 	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromPost(@PathVariable(name = "postId") UUID postPublicId, @PathVariable(name = "reaction") Reaction reaction) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();

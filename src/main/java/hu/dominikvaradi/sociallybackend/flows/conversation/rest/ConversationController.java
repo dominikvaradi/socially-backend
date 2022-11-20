@@ -50,7 +50,7 @@ public class ConversationController {
 	private final MessageService messageService;
 	private final UserService userService;
 
-	@GetMapping("/api/conversations")
+	@GetMapping("/conversations")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<ConversationResponseDto>>> findAllConversationsByCurrentUser(@ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -65,7 +65,7 @@ public class ConversationController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/conversations")
+	@PostMapping("/conversations")
 	public ResponseEntity<RestApiResponseDto<ConversationResponseDto>> createConversation(@RequestBody ConversationCreateRequestDto conversationCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
@@ -79,7 +79,7 @@ public class ConversationController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/conversations/{conversationId}")
+	@GetMapping("/conversations/{conversationId}")
 	public ResponseEntity<RestApiResponseDto<ConversationResponseDto>> findConversationByPublicId(@PathVariable(name = "conversationId") UUID conversationPublicId) {
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 
@@ -88,7 +88,7 @@ public class ConversationController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PutMapping("/api/conversations/{conversationId}/users")
+	@PutMapping("/conversations/{conversationId}/users")
 	public ResponseEntity<RestApiResponseDto<Set<ConversationUserResponseDto>>> addUsersToConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody ConversationAddUsersRequestDto conversationAddUsersRequestDto) {
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 
@@ -102,7 +102,7 @@ public class ConversationController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/conversations/{conversationId}/users/{userId}")
+	@DeleteMapping("/conversations/{conversationId}/users/{userId}")
 	public ResponseEntity<EmptyRestApiResponseDto> removeUserFromConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId) {
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 		User user = userService.findUserByPublicId(userPublicId);
@@ -112,7 +112,7 @@ public class ConversationController {
 		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 
-	@PutMapping("/api/conversations/{conversationId}/users/{userId}/role")
+	@PutMapping("/conversations/{conversationId}/users/{userId}/role")
 	public ResponseEntity<RestApiResponseDto<ConversationUserResponseDto>> updateUsersRoleInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId, ConversationChangeUserRoleRequestDto conversationChangeUserRoleRequestDto) {
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 		User user = userService.findUserByPublicId(userPublicId);
@@ -124,7 +124,7 @@ public class ConversationController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/conversations/{conversationId}/messages")
+	@GetMapping("/conversations/{conversationId}/messages")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<MessageResponseDto>>> findMessagesByConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -143,7 +143,7 @@ public class ConversationController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/conversations/{conversationId}/messages")
+	@PostMapping("/conversations/{conversationId}/messages")
 	public ResponseEntity<RestApiResponseDto<MessageResponseDto>> createMessageInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody MessageCreateRequestDto messageCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();

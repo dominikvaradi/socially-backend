@@ -19,7 +19,7 @@ public class TestController {
 	private final ApplicationProperties applicationProperties;
 	private final TestDataService testDataService;
 
-	@PostMapping("/api/test/reset-db")
+	@PostMapping("/test/reset-db")
 	public ResponseEntity<EmptyRestApiResponseDto> resetTestData() {
 		if (!applicationProperties.getEnvironment().isTestingEndpointsEnabled()) {
 			throw new RestApiException("TESTING_ENDPOINTS_DISABLED", (short) 403);

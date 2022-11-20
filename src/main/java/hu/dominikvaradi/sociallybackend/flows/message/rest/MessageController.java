@@ -38,7 +38,7 @@ import java.util.UUID;
 public class MessageController {
 	private final MessageService messageService;
 
-	@GetMapping("/api/messages/{messageId}")
+	@GetMapping("/messages/{messageId}")
 	public ResponseEntity<RestApiResponseDto<MessageResponseDto>> findMessageByPublicId(@PathVariable(name = "messageId") UUID messagePublicId) {
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
@@ -48,7 +48,7 @@ public class MessageController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/messages/{messageId}")
+	@DeleteMapping("/messages/{messageId}")
 	public ResponseEntity<EmptyRestApiResponseDto> deleteMessage(@PathVariable(name = "messageId") UUID messagePublicId) {
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
@@ -57,7 +57,7 @@ public class MessageController {
 		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 
-	@GetMapping("/api/messages/{messageId}/reactions")
+	@GetMapping("/messages/{messageId}/reactions")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<MessageReactionResponseDto>>> findAllReactionsByMessage(@PathVariable(name = "messageId") UUID messagePublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -71,7 +71,7 @@ public class MessageController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/messages/{messageId}/reactions")
+	@PostMapping("/messages/{messageId}/reactions")
 	public ResponseEntity<RestApiResponseDto<MessageReactionResponseDto>> createReactionOnMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
@@ -84,7 +84,7 @@ public class MessageController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/api/messages/{messageId}/reactions/{reaction}")
+	@DeleteMapping("/messages/{messageId}/reactions/{reaction}")
 	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromMessage(@PathVariable(name = "messageId") UUID messagePublicId, @PathVariable(name = "reaction") Reaction reaction) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();

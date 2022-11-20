@@ -41,7 +41,7 @@ public class UserController {
 	private final UserService userService;
 	private final PostService postService;
 
-	@GetMapping("/api/users")
+	@GetMapping("/users")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<UserSearchResponseDto>>> findAllUsersByName(@RequestParam(name = "name", defaultValue = "") String name, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -53,7 +53,7 @@ public class UserController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/users/{userId}")
+	@GetMapping("/users/{userId}")
 	public ResponseEntity<RestApiResponseDto<UserProfileResponseDto>> findUserByPublicId(@PathVariable(name = "userId") UUID userPublicId) {
 		User user = userService.findUserByPublicId(userPublicId);
 
@@ -62,7 +62,7 @@ public class UserController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PutMapping("/api/users/{userId}")
+	@PutMapping("/users/{userId}")
 	public ResponseEntity<RestApiResponseDto<UserProfileResponseDto>> updateUser(@PathVariable(name = "userId") UUID userPublicId, @RequestBody UserUpdateRequestDto userUpdateDto) {
 		User user = userService.findUserByPublicId(userPublicId);
 
@@ -73,7 +73,7 @@ public class UserController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/users/{userId}/friends")
+	@GetMapping("/users/{userId}/friends")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<UserSearchResponseDto>>> findAllFriendsOfUser(@PathVariable(name = "userId") UUID userPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -87,7 +87,7 @@ public class UserController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@GetMapping("/api/users/{userId}/posts")
+	@GetMapping("/users/{userId}/posts")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostResponseDto>>> findAllPostsOfUser(@PathVariable(name = "userId") UUID userPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
@@ -107,7 +107,7 @@ public class UserController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/api/users/{userId}/posts")
+	@PostMapping("/users/{userId}/posts")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> createPostOnUser(@PathVariable(name = "userId") UUID userPublicId, @RequestBody PostCreateRequestDto postCreateRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
