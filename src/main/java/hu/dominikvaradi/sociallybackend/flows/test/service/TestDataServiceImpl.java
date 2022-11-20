@@ -86,7 +86,7 @@ public class TestDataServiceImpl implements TestDataService {
 
 			for (TestUser userData : testUsers) {
 				newUsers.add(User.builder()
-						.email(String.join(".", userData.getName().toLowerCase().split(" ")) + "@test.socially.bme.hu")
+						.email(String.join(".", userData.getName().toLowerCase().split(" ")) + "@socially.hu")
 						.password(passwordEncoder.encode(userData.getPassword()))
 						.name(userData.getName())
 						.birthDate(userData.getBirthDate())
