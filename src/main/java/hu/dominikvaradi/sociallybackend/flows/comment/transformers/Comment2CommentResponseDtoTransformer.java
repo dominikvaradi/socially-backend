@@ -6,8 +6,8 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountRes
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Comment2CommentResponseDtoTransformer {
 	private Comment2CommentResponseDtoTransformer() {
@@ -15,7 +15,7 @@ public class Comment2CommentResponseDtoTransformer {
 	}
 
 	public static CommentResponseDto transform(Comment comment) {
-		Set<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new HashSet<>();
+		List<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new ArrayList<>();
 		for (Reaction reaction : Reaction.values()) {
 			emptyReactionCountResponseDtoList.add(ReactionCountResponseDto.builder()
 					.reaction(reaction)

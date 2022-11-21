@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -66,7 +67,7 @@ public class PostController {
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(post);
-		responseData.setReactionsCount(postService.findAllReactionCountsByPost(post));
+		responseData.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(post)));
 		responseData.setCommentsCount(postService.findCommentCountByPost(post));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
@@ -79,7 +80,7 @@ public class PostController {
 		Post updatedPost = postService.updatePost(post, postUpdateRequestDto);
 
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(updatedPost);
-		responseData.setReactionsCount(postService.findAllReactionCountsByPost(updatedPost));
+		responseData.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(updatedPost)));
 		responseData.setCommentsCount(postService.findCommentCountByPost(updatedPost));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
@@ -103,7 +104,7 @@ public class PostController {
 		Page<CommentResponseDto> page = commentService.findAllCommentsByPost(post, pageable)
 				.map(c -> {
 					CommentResponseDto transformed = Comment2CommentResponseDtoTransformer.transform(c);
-					transformed.setReactionsCount(commentService.findAllReactionCountsByComment(c));
+					transformed.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(c)));
 
 					return transformed;
 				});

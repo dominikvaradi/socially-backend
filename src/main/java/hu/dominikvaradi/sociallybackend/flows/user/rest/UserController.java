@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -96,7 +97,7 @@ public class UserController {
 		Page<PostResponseDto> page = postService.findAllPostsOnUsersTimeline(user, pageable)
 				.map(p -> {
 					PostResponseDto transformed = Post2PostResponseDtoTransformer.transform(p);
-					transformed.setReactionsCount(postService.findAllReactionCountsByPost(p));
+					transformed.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(p)));
 					transformed.setCommentsCount(postService.findCommentCountByPost(p));
 
 					return transformed;

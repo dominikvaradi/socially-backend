@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -45,7 +46,7 @@ public class CommentController {
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
 		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(comment);
-		responseData.setReactionsCount(commentService.findAllReactionCountsByComment(comment));
+		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(comment)));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -57,7 +58,7 @@ public class CommentController {
 		Comment updatedComment = commentService.updateComment(comment, commentUpdateRequestDto);
 
 		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(updatedComment);
-		responseData.setReactionsCount(commentService.findAllReactionCountsByComment(comment));
+		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(comment)));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}

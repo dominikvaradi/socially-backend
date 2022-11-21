@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -73,10 +74,7 @@ public class AuthController {
 
 		TokenResponseDto accessToken = jwtUtilService.createJwtAccessTokenForUser(user);
 
-		Optional<RefreshToken> existingRefreshToken = refreshTokenService.findRefreshTokenByUser(user);
-		existingRefreshToken.ifPresent(refreshTokenService::deleteRefreshToken);
-
-		RefreshToken createdRefreshToken = refreshTokenService.createRefreshToken(user);
+		RefreshToken createdRefreshToken = refreshTokenService.createAndDeleteExistingRefreshToken(user);
 
 		TokenResponseDto refreshTokenResponseData = TokenResponseDto.builder()
 				.token(createdRefreshToken.getToken().toString())
@@ -96,6 +94,7 @@ public class AuthController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
+	@Transactional
 	@PostMapping("/auth/refresh-token")
 	public ResponseEntity<RestApiResponseDto<RefreshTokenResponseDto>> refreshToken(@RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {
 		Optional<RefreshToken> foundRefreshToken = refreshTokenService.findRefreshTokenByToken(refreshTokenRequestDto.getRefreshToken());
@@ -110,9 +109,7 @@ public class AuthController {
 		}
 
 		User user = oldRefreshToken.getUser();
-		RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
-
-		refreshTokenService.deleteRefreshToken(oldRefreshToken);
+		RefreshToken newRefreshToken = refreshTokenService.createAndDeleteExistingRefreshToken(user);
 
 		TokenResponseDto accessToken = jwtUtilService.createJwtAccessTokenForUser(user);
 		TokenResponseDto refreshTokenResponseData = TokenResponseDto.builder()

@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -43,7 +44,7 @@ public class MessageController {
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
 		MessageResponseDto responseData = Message2MessageResponseDtoTransformer.transform(message);
-		responseData.setReactionsCount(messageService.findAllReactionCountsByMessage(message));
+		responseData.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(message)));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}

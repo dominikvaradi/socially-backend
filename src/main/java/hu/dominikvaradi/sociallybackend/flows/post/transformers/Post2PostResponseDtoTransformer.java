@@ -6,8 +6,8 @@ import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
 
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Post2PostResponseDtoTransformer {
 	private Post2PostResponseDtoTransformer() {
@@ -15,7 +15,7 @@ public class Post2PostResponseDtoTransformer {
 	}
 
 	public static PostResponseDto transform(Post post) {
-		Set<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new HashSet<>();
+		List<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new ArrayList<>();
 		for (Reaction reaction : Reaction.values()) {
 			emptyReactionCountResponseDtoList.add(ReactionCountResponseDto.builder()
 					.reaction(reaction)

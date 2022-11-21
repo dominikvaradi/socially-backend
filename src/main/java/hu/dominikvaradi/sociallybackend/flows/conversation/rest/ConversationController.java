@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -133,7 +134,7 @@ public class ConversationController {
 		Page<MessageResponseDto> page = messageService.findAllMessagesByConversation(conversation, pageable)
 				.map(m -> {
 					MessageResponseDto transformed = Message2MessageResponseDtoTransformer.transform(m);
-					transformed.setReactionsCount(messageService.findAllReactionCountsByMessage(m));
+					transformed.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(m)));
 
 					return transformed;
 				});

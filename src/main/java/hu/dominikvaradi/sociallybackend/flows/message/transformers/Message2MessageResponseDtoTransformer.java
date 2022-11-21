@@ -6,8 +6,8 @@ import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageResponseDto;
 
 import java.time.ZoneId;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Message2MessageResponseDtoTransformer {
 	private Message2MessageResponseDtoTransformer() {
@@ -15,7 +15,7 @@ public class Message2MessageResponseDtoTransformer {
 	}
 
 	public static MessageResponseDto transform(Message message) {
-		Set<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new HashSet<>();
+		List<ReactionCountResponseDto> emptyReactionCountResponseDtoList = new ArrayList<>();
 		for (Reaction reaction : Reaction.values()) {
 			emptyReactionCountResponseDtoList.add(ReactionCountResponseDto.builder()
 					.reaction(reaction)
