@@ -2,7 +2,6 @@ package hu.dominikvaradi.sociallybackend.flows.message.service;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
-import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
@@ -22,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -66,9 +66,14 @@ public class MessageService {
 	}
 
 	@PreAuthorize("authentication.principal.user == #user && isUserMemberOfConversation(#user, #message.conversation)")
-	public MessageReaction addReactionToMessage(Message message, User user, Reaction reaction) {
-		if (messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction).isPresent()) {
-			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_MESSAGE_MADE_BY_USER");
+	public MessageReaction toggleReactionOnMessage(Message message, User user, Reaction reaction) {
+		Optional<MessageReaction> existingMessageReaction = messageReactionRepository.findByUserAndMessage(user, message);
+		if (existingMessageReaction.isPresent()) {
+			messageReactionRepository.delete(existingMessageReaction.get());
+
+			if (existingMessageReaction.get().getReaction() == reaction) {
+				return null;
+			}
 		}
 
 		MessageReaction newMessageReaction = MessageReaction.builder()
@@ -78,14 +83,6 @@ public class MessageService {
 				.build();
 
 		return messageReactionRepository.save(newMessageReaction);
-	}
-
-	@PreAuthorize("authentication.principal.user == #user && isUserMemberOfConversation(#user, #message.conversation)")
-	public void deleteReactionFromMessage(Message message, User user, Reaction reaction) {
-		MessageReaction messageReaction = messageReactionRepository.findByUserAndMessageAndReaction(user, message, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
-
-		messageReactionRepository.delete(messageReaction);
 	}
 
 	@PreAuthorize("isAuthenticationUserMemberOfConversation(#message.conversation)")

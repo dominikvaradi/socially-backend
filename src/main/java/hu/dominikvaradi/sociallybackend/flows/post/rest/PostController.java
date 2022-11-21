@@ -8,9 +8,8 @@ import hu.dominikvaradi.sociallybackend.flows.comment.transformers.Comment2Comme
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionToggleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostReactionResponseDto;
@@ -141,27 +140,16 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/posts/{postId}/reactions")
-	public ResponseEntity<RestApiResponseDto<PostReactionResponseDto>> createReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
+	@PutMapping("/posts/{postId}/reactions")
+	public ResponseEntity<RestApiResponseDto<PostReactionResponseDto>> toggleReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
-		PostReaction createdPostReaction = postService.addReactionToPost(post, currentUser, reactionCreateRequestDto.getReaction());
+		PostReaction updatedPostReaction = postService.toggleReactionOnPost(post, currentUser, reactionToggleRequestDto.getReaction());
 
-		PostReactionResponseDto responseData = PostReaction2PostReactionResponseDtoTransformer.transform(createdPostReaction);
+		PostReactionResponseDto responseData = updatedPostReaction == null ? null : PostReaction2PostReactionResponseDtoTransformer.transform(updatedPostReaction);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
-	}
-
-	@DeleteMapping("/posts/{postId}/reactions/{reaction}")
-	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromPost(@PathVariable(name = "postId") UUID postPublicId, @PathVariable(name = "reaction") Reaction reaction) {
-		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		User currentUser = userDetails.getUser();
-		Post post = postService.findPostByPublicId(postPublicId);
-
-		postService.deleteReactionFromPost(post, currentUser, reaction);
-
-		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 }

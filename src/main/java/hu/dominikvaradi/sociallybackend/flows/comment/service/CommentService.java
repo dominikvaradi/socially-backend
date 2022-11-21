@@ -8,7 +8,6 @@ import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentReaction
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
-import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -66,9 +66,14 @@ public class CommentService {
 	}
 
 	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #comment.post.addressee)")
-	public CommentReaction addReactionToComment(Comment comment, User user, Reaction reaction) {
-		if (commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction).isPresent()) {
-			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_COMMENT_MADE_BY_USER");
+	public CommentReaction toggleReactionOnComment(Comment comment, User user, Reaction reaction) {
+		Optional<CommentReaction> existingCommentReaction = commentReactionRepository.findByUserAndComment(user, comment);
+		if (existingCommentReaction.isPresent()) {
+			commentReactionRepository.delete(existingCommentReaction.get());
+
+			if (existingCommentReaction.get().getReaction() == reaction) {
+				return null;
+			}
 		}
 
 		CommentReaction newCommentReaction = CommentReaction.builder()
@@ -78,14 +83,6 @@ public class CommentService {
 				.build();
 
 		return commentReactionRepository.save(newCommentReaction);
-	}
-
-	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #comment.post.addressee)")
-	public void deleteReactionFromComment(Comment comment, User user, Reaction reaction) {
-		CommentReaction commentReaction = commentReactionRepository.findByUserAndCommentAndReaction(user, comment, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
-
-		commentReactionRepository.delete(commentReaction);
 	}
 
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")

@@ -6,7 +6,7 @@ import lombok.Getter;
 import javax.validation.constraints.NotNull;
 
 @Getter
-public class ReactionCreateRequestDto {
+public class ReactionToggleRequestDto {
 	@NotNull
 	private Reaction reaction;
 }

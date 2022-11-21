@@ -3,9 +3,8 @@ package hu.dominikvaradi.sociallybackend.flows.message.rest;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionToggleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.MessageReaction;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageReactionResponseDto;
@@ -26,7 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -72,27 +71,16 @@ public class MessageController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/messages/{messageId}/reactions")
-	public ResponseEntity<RestApiResponseDto<MessageReactionResponseDto>> createReactionOnMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
+	@PutMapping("/messages/{messageId}/reactions")
+	public ResponseEntity<RestApiResponseDto<MessageReactionResponseDto>> toggleReactionOnMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
-		MessageReaction createdMessageReaction = messageService.addReactionToMessage(message, currentUser, reactionCreateRequestDto.getReaction());
+		MessageReaction updatedMessageReaction = messageService.toggleReactionOnMessage(message, currentUser, reactionToggleRequestDto.getReaction());
 
-		MessageReactionResponseDto responseData = MessageReaction2MessageReactionResponseDtoTransformer.transform(createdMessageReaction);
+		MessageReactionResponseDto responseData = updatedMessageReaction == null ? null : MessageReaction2MessageReactionResponseDtoTransformer.transform(updatedMessageReaction);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
-	}
-
-	@DeleteMapping("/messages/{messageId}/reactions/{reaction}")
-	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromMessage(@PathVariable(name = "messageId") UUID messagePublicId, @PathVariable(name = "reaction") Reaction reaction) {
-		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		User currentUser = userDetails.getUser();
-		Message message = messageService.findMessageByPublicId(messagePublicId);
-
-		messageService.deleteReactionFromMessage(message, currentUser, reaction);
-
-		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 }

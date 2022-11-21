@@ -3,7 +3,6 @@ package hu.dominikvaradi.sociallybackend.flows.post.service;
 import hu.dominikvaradi.sociallybackend.flows.comment.repository.CommentRepository;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
-import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.friendship.repository.FriendshipRepository;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,26 +85,23 @@ public class PostService {
 	}
 
 	@PreAuthorize("authentication.principal.user == #user && isUserEqualsOrFriendOf(#user, #post.addressee)")
-	public PostReaction addReactionToPost(Post post, User user, Reaction reaction) {
-		if (postReactionRepository.findByUserAndPostAndReaction(user, post, reaction).isPresent()) {
-			throw new EntityConflictException("REACTION_ALREADY_EXISTS_ON_POST_MADE_BY_USER");
+	public PostReaction toggleReactionOnPost(Post post, User user, Reaction reaction) {
+		Optional<PostReaction> existingPostReaction = postReactionRepository.findByUserAndPost(user, post);
+		if (existingPostReaction.isPresent()) {
+			postReactionRepository.delete(existingPostReaction.get());
+
+			if (existingPostReaction.get().getReaction() == reaction) {
+				return null;
+			}
 		}
 
-		PostReaction newCommentReaction = PostReaction.builder()
+		PostReaction newPostReaction = PostReaction.builder()
 				.reaction(reaction)
 				.user(user)
 				.post(post)
 				.build();
 
-		return postReactionRepository.save(newCommentReaction);
-	}
-
-	@PreAuthorize("authentication.principal.user == #user && isUserEqualsOrFriendOf(#user, #post.addressee)")
-	public void deleteReactionFromPost(Post post, User user, Reaction reaction) {
-		PostReaction postReaction = postReactionRepository.findByUserAndPostAndReaction(user, post, reaction)
-				.orElseThrow(() -> new EntityNotFoundException("REACTION_NOT_FOUND"));
-
-		postReactionRepository.delete(postReaction);
+		return postReactionRepository.save(newPostReaction);
 	}
 
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#post.addressee)")

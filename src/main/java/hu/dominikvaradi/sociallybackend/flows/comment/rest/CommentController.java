@@ -11,9 +11,8 @@ import hu.dominikvaradi.sociallybackend.flows.comment.transformers.CommentReacti
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionToggleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,7 +26,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,27 +84,16 @@ public class CommentController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/comments/{commentId}/reactions")
-	public ResponseEntity<RestApiResponseDto<CommentReactionResponseDto>> createReactionOnComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
+	@PutMapping("/comments/{commentId}/reactions")
+	public ResponseEntity<RestApiResponseDto<CommentReactionResponseDto>> toggleReactionOnComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
-		CommentReaction createdCommentReaction = commentService.addReactionToComment(comment, currentUser, reactionCreateRequestDto.getReaction());
+		CommentReaction updatedCommentReaction = commentService.toggleReactionOnComment(comment, currentUser, reactionToggleRequestDto.getReaction());
 
-		CommentReactionResponseDto responseData = CommentReaction2CommentReactionResponseDto.transform(createdCommentReaction);
+		CommentReactionResponseDto responseData = updatedCommentReaction == null ? null : CommentReaction2CommentReactionResponseDto.transform(updatedCommentReaction);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
-	}
-
-	@DeleteMapping("/comments/{commentId}/reactions/{reaction}")
-	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromComment(@PathVariable(name = "commentId") UUID commentPublicId, @PathVariable(name = "reaction") Reaction reaction) {
-		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		User currentUser = userDetails.getUser();
-		Comment comment = commentService.findCommentByPublicId(commentPublicId);
-
-		commentService.deleteReactionFromComment(comment, currentUser, reaction);
-
-		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 }
