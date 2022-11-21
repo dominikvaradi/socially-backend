@@ -34,10 +34,7 @@ public class RefreshTokenService {
 
 	public RefreshToken createAndDeleteExistingRefreshToken(User user) {
 		Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUser(user);
-		if (existingRefreshToken.isPresent()) {
-			refreshTokenRepository.delete(existingRefreshToken.get());
-			refreshTokenRepository.flush();
-		}
+		existingRefreshToken.ifPresent(refreshTokenRepository::delete);
 
 		RefreshToken createdRefreshToken = RefreshToken.builder()
 				.user(user)
@@ -49,9 +46,5 @@ public class RefreshTokenService {
 
 	public boolean isRefreshTokenExpired(RefreshToken refreshToken) {
 		return refreshToken.getExpiresAt().compareTo(Instant.now()) < 0;
-	}
-
-	public void deleteRefreshToken(RefreshToken refreshToken) {
-		refreshTokenRepository.delete(refreshToken);
 	}
 }
