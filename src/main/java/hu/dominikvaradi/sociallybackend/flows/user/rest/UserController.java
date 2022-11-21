@@ -92,6 +92,8 @@ public class UserController {
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostResponseDto>>> findAllPostsOfUser(@PathVariable(name = "userId") UUID userPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		User user = userService.findUserByPublicId(userPublicId);
 
 		Page<PostResponseDto> page = postService.findAllPostsOnUsersTimeline(user, pageable)
@@ -99,6 +101,7 @@ public class UserController {
 					PostResponseDto transformed = Post2PostResponseDtoTransformer.transform(p);
 					transformed.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(p)));
 					transformed.setCommentsCount(postService.findCommentCountByPost(p));
+					transformed.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, p));
 
 					return transformed;
 				});

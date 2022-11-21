@@ -54,7 +54,7 @@ public class PostService {
 		return postRepository.save(newPost);
 	}
 
-	@PreAuthorize("authentication.principal.user == #authorUser && isUserEqualsOrFriendOf(#authorUser, #addresseeUser)")
+	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#user)")
 	public Page<Post> findAllPostsOnUsersTimeline(User user, Pageable pageable) {
 		return postRepository.findByAddresseeOrderByCreatedDesc(user, pageable);
 	}
@@ -126,5 +126,15 @@ public class PostService {
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#post.addressee)")
 	public long findCommentCountByPost(Post post) {
 		return commentRepository.countByPost(post);
+	}
+
+	@PreAuthorize("authentication.principal.user == #user && isAuthenticationUserEqualsOrFriendOf(#post.addressee)")
+	public Reaction getUsersReactionByPost(User user, Post post) {
+		Optional<PostReaction> postReaction = postReactionRepository.findByUserAndPost(user, post);
+		if (postReaction.isEmpty()) {
+			return null;
+		}
+
+		return postReaction.get().getReaction();
 	}
 }

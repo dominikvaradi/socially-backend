@@ -41,22 +41,28 @@ public class CommentController {
 
 	@GetMapping("/comments/{commentId}")
 	public ResponseEntity<RestApiResponseDto<CommentResponseDto>> findCommentByPublicId(@PathVariable(name = "commentId") UUID commentPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
 		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(comment);
 		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(comment)));
+		responseData.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, comment));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
 	@PutMapping("/comments/{commentId}")
 	public ResponseEntity<RestApiResponseDto<CommentResponseDto>> updateComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody CommentUpdateRequestDto commentUpdateRequestDto) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
 		Comment updatedComment = commentService.updateComment(comment, commentUpdateRequestDto);
 
 		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(updatedComment);
-		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(comment)));
+		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(updatedComment)));
+		responseData.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, updatedComment));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}

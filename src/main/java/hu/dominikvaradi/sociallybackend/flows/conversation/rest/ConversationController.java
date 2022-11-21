@@ -129,12 +129,15 @@ public class ConversationController {
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<MessageResponseDto>>> findMessagesByConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 
 		Page<MessageResponseDto> page = messageService.findAllMessagesByConversation(conversation, pageable)
 				.map(m -> {
 					MessageResponseDto transformed = Message2MessageResponseDtoTransformer.transform(m);
 					transformed.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(m)));
+					transformed.setCurrentUsersReaction(messageService.getUsersReactionByMessage(currentUser, m));
 
 					return transformed;
 				});

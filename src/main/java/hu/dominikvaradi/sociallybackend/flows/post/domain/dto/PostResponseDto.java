@@ -1,6 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.post.domain.dto;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,4 +49,6 @@ public class PostResponseDto {
 
 	@NotNull
 	private long commentsCount;
+
+	private Reaction currentUsersReaction;
 }

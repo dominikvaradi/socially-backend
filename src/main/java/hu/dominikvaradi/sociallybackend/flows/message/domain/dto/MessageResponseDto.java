@@ -1,6 +1,7 @@
 package hu.dominikvaradi.sociallybackend.flows.message.domain.dto;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,4 +38,6 @@ public class MessageResponseDto {
 
 	@NotNull
 	private List<ReactionCountResponseDto> reactionsCount;
+
+	private Reaction currentUsersReaction;
 }

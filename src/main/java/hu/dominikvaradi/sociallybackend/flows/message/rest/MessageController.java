@@ -40,10 +40,13 @@ public class MessageController {
 
 	@GetMapping("/messages/{messageId}")
 	public ResponseEntity<RestApiResponseDto<MessageResponseDto>> findMessageByPublicId(@PathVariable(name = "messageId") UUID messagePublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
 		MessageResponseDto responseData = Message2MessageResponseDtoTransformer.transform(message);
 		responseData.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(message)));
+		responseData.setCurrentUsersReaction(messageService.getUsersReactionByMessage(currentUser, message));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}

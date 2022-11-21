@@ -54,7 +54,14 @@ public class PostController {
 		User currentUser = userDetails.getUser();
 
 		Page<PostResponseDto> page = postService.findAllPostsForUsersFeed(currentUser, pageable)
-				.map(Post2PostResponseDtoTransformer::transform);
+				.map(p -> {
+					PostResponseDto transformed = Post2PostResponseDtoTransformer.transform(p);
+					transformed.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(p)));
+					transformed.setCommentsCount(postService.findCommentCountByPost(p));
+					transformed.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, p));
+
+					return transformed;
+				});
 
 		PageResponseDto<PostResponseDto> responseData = PageResponseDto.buildFromPage(page);
 
@@ -63,17 +70,22 @@ public class PostController {
 
 	@GetMapping("/posts/{postId}")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> findPostByPublicId(@PathVariable(name = "postId") UUID postPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(post);
 		responseData.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(post)));
 		responseData.setCommentsCount(postService.findCommentCountByPost(post));
+		responseData.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, post));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
 	@PutMapping("/posts/{postId}")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> updatePost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		Post updatedPost = postService.updatePost(post, postUpdateRequestDto);
@@ -81,6 +93,7 @@ public class PostController {
 		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(updatedPost);
 		responseData.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(updatedPost)));
 		responseData.setCommentsCount(postService.findCommentCountByPost(updatedPost));
+		responseData.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, updatedPost));
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -98,12 +111,15 @@ public class PostController {
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<CommentResponseDto>>> findAllCommentsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		Page<CommentResponseDto> page = commentService.findAllCommentsByPost(post, pageable)
 				.map(c -> {
 					CommentResponseDto transformed = Comment2CommentResponseDtoTransformer.transform(c);
 					transformed.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(c)));
+					transformed.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, c));
 
 					return transformed;
 				});

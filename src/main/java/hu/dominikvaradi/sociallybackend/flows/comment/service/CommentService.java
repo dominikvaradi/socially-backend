@@ -103,4 +103,14 @@ public class CommentService {
 
 		return reactionCounts;
 	}
+
+	@PreAuthorize("authentication.principal.user == user && isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
+	public Reaction getUsersReactionByComment(User user, Comment comment) {
+		Optional<CommentReaction> commentReaction = commentReactionRepository.findByUserAndComment(user, comment);
+		if (commentReaction.isEmpty()) {
+			return null;
+		}
+
+		return commentReaction.get().getReaction();
+	}
 }

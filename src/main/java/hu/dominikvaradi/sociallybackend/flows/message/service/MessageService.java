@@ -103,4 +103,14 @@ public class MessageService {
 
 		return reactionCounts;
 	}
+
+	@PreAuthorize("authentication.principal.user == #user && isAuthenticationUserMemberOfConversation(#message.conversation)")
+	public Reaction getUsersReactionByMessage(User user, Message message) {
+		Optional<MessageReaction> messageReaction = messageReactionRepository.findByUserAndMessage(user, message);
+		if (messageReaction.isEmpty()) {
+			return null;
+		}
+
+		return messageReaction.get().getReaction();
+	}
 }
