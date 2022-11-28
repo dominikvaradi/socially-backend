@@ -73,10 +73,7 @@ public class AuthController {
 
 		TokenResponseDto accessToken = jwtUtilService.createJwtAccessTokenForUser(user);
 
-		Optional<RefreshToken> existingRefreshToken = refreshTokenService.findRefreshTokenByUser(user);
-		existingRefreshToken.ifPresent(refreshTokenService::deleteRefreshToken);
-
-		RefreshToken createdRefreshToken = refreshTokenService.createRefreshToken(user);
+		RefreshToken createdRefreshToken = refreshTokenService.createAndDeleteExistingRefreshToken(user);
 
 		TokenResponseDto refreshTokenResponseData = TokenResponseDto.builder()
 				.token(createdRefreshToken.getToken().toString())
@@ -105,14 +102,11 @@ public class AuthController {
 
 		RefreshToken oldRefreshToken = foundRefreshToken.get();
 		if (refreshTokenService.isRefreshTokenExpired(oldRefreshToken)) {
-			refreshTokenService.deleteRefreshToken(oldRefreshToken);
 			throw new RefreshTokenVerificationException("REFRESH_TOKEN_EXPIRED");
 		}
 
 		User user = oldRefreshToken.getUser();
-		RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
-
-		refreshTokenService.deleteRefreshToken(oldRefreshToken);
+		RefreshToken newRefreshToken = refreshTokenService.createAndDeleteExistingRefreshToken(user);
 
 		TokenResponseDto accessToken = jwtUtilService.createJwtAccessTokenForUser(user);
 		TokenResponseDto refreshTokenResponseData = TokenResponseDto.builder()

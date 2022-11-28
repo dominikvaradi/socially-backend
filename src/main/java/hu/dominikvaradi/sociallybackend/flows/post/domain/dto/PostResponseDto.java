@@ -1,13 +1,14 @@
 package hu.dominikvaradi.sociallybackend.flows.post.domain.dto;
 
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCountResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -44,8 +45,10 @@ public class PostResponseDto {
 	private ZonedDateTime created;
 
 	@NotNull
-	private Set<ReactionCountResponseDto> reactionsCount;
+	private List<ReactionCountResponseDto> reactionsCount;
 
 	@NotNull
 	private long commentsCount;
+
+	private Reaction currentUsersReaction;
 }

@@ -7,7 +7,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotNull;
 import java.time.ZonedDateTime;
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -24,5 +24,5 @@ public class ConversationResponseDto {
 	private ConversationType type;
 
 	@NotNull
-	private Set<ConversationUserResponseDto> members;
+	private List<ConversationUserResponseDto> members;
 }

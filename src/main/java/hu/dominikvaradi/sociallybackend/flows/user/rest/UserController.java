@@ -3,6 +3,8 @@ package hu.dominikvaradi.sociallybackend.flows.user.rest;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.friendship.domain.Friendship;
+import hu.dominikvaradi.sociallybackend.flows.friendship.service.FriendshipService;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostCreateRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
@@ -32,6 +34,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -40,6 +45,7 @@ import java.util.UUID;
 public class UserController {
 	private final UserService userService;
 	private final PostService postService;
+	private final FriendshipService friendshipService;
 
 	@GetMapping("/users")
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<UserSearchResponseDto>>> findAllUsersByName(@RequestParam(name = "name", defaultValue = "") String name, @ParameterObject PageableRequestDto pageableRequestDto) {
@@ -55,9 +61,21 @@ public class UserController {
 
 	@GetMapping("/users/{userId}")
 	public ResponseEntity<RestApiResponseDto<UserProfileResponseDto>> findUserByPublicId(@PathVariable(name = "userId") UUID userPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		User user = userService.findUserByPublicId(userPublicId);
 
 		UserProfileResponseDto responseData = User2UserProfileResponseDtoTransformer.transform(user);
+		responseData.setEqualToCurrentUser(Objects.equals(currentUser, user));
+
+		if (!responseData.isEqualToCurrentUser()) {
+			Optional<Friendship> friendshipOfUsers = friendshipService.findFriendshipBetweenUsers(currentUser, user);
+			friendshipOfUsers.ifPresent(friendship -> {
+				responseData.setFriendshipId(friendship.getPublicId());
+				responseData.setFriendshipStatusOfCurrentUser(friendship.getStatus());
+				responseData.setFriendshipStatusLastModifierEqualToCurrentUser(Objects.equals(currentUser, friendship.getLastStatusModifier()));
+			});
+		}
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -69,17 +87,18 @@ public class UserController {
 		User updatedUser = userService.updateUser(user, userUpdateDto);
 
 		UserProfileResponseDto responseData = User2UserProfileResponseDtoTransformer.transform(updatedUser);
+		responseData.setEqualToCurrentUser(true);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
 	@GetMapping("/users/{userId}/friends")
-	public ResponseEntity<RestApiResponseDto<PageResponseDto<UserSearchResponseDto>>> findAllFriendsOfUser(@PathVariable(name = "userId") UUID userPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
+	public ResponseEntity<RestApiResponseDto<PageResponseDto<UserSearchResponseDto>>> findAllFriendsOfUser(@PathVariable(name = "userId") UUID userPublicId, @RequestParam(name = "name", defaultValue = "") String name, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
 		User user = userService.findUserByPublicId(userPublicId);
 
-		Page<UserSearchResponseDto> page = userService.findAllFriendsByUser(user, pageable)
+		Page<UserSearchResponseDto> page = userService.findAllFriendsByUser(user, name, pageable)
 				.map(User2UserSearchResponseDtoTransformer::transform);
 
 		PageResponseDto<UserSearchResponseDto> responseData = PageResponseDto.buildFromPage(page);
@@ -91,13 +110,16 @@ public class UserController {
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostResponseDto>>> findAllPostsOfUser(@PathVariable(name = "userId") UUID userPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		User user = userService.findUserByPublicId(userPublicId);
 
 		Page<PostResponseDto> page = postService.findAllPostsOnUsersTimeline(user, pageable)
 				.map(p -> {
 					PostResponseDto transformed = Post2PostResponseDtoTransformer.transform(p);
-					transformed.setReactionsCount(postService.findAllReactionCountsByPost(p));
+					transformed.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(p)));
 					transformed.setCommentsCount(postService.findCommentCountByPost(p));
+					transformed.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, p));
 
 					return transformed;
 				});

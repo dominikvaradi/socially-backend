@@ -8,11 +8,10 @@ import hu.dominikvaradi.sociallybackend.flows.comment.transformers.Comment2Comme
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
-import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionCreateRequestDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionToggleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.Post;
-import hu.dominikvaradi.sociallybackend.flows.post.domain.PostReaction;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostReactionResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.post.domain.dto.PostUpdateRequestDto;
@@ -35,8 +34,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -54,7 +55,16 @@ public class PostController {
 		User currentUser = userDetails.getUser();
 
 		Page<PostResponseDto> page = postService.findAllPostsForUsersFeed(currentUser, pageable)
-				.map(Post2PostResponseDtoTransformer::transform);
+				.map(p -> {
+					PostResponseDto transformed = Post2PostResponseDtoTransformer.transform(p);
+
+					transformed.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(p)));
+
+					transformed.setCommentsCount(postService.findCommentCountByPost(p));
+					transformed.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, p));
+
+					return transformed;
+				});
 
 		PageResponseDto<PostResponseDto> responseData = PageResponseDto.buildFromPage(page);
 
@@ -63,24 +73,24 @@ public class PostController {
 
 	@GetMapping("/posts/{postId}")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> findPostByPublicId(@PathVariable(name = "postId") UUID postPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
-		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(post);
-		responseData.setReactionsCount(postService.findAllReactionCountsByPost(post));
-		responseData.setCommentsCount(postService.findCommentCountByPost(post));
+		PostResponseDto responseData = createPostResponseDtoFromPost(post, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
 	@PutMapping("/posts/{postId}")
 	public ResponseEntity<RestApiResponseDto<PostResponseDto>> updatePost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody PostUpdateRequestDto postUpdateRequestDto) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		Post updatedPost = postService.updatePost(post, postUpdateRequestDto);
 
-		PostResponseDto responseData = Post2PostResponseDtoTransformer.transform(updatedPost);
-		responseData.setReactionsCount(postService.findAllReactionCountsByPost(updatedPost));
-		responseData.setCommentsCount(postService.findCommentCountByPost(updatedPost));
+		PostResponseDto responseData = createPostResponseDtoFromPost(updatedPost, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -98,12 +108,15 @@ public class PostController {
 	public ResponseEntity<RestApiResponseDto<PageResponseDto<CommentResponseDto>>> findAllCommentsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
 		Page<CommentResponseDto> page = commentService.findAllCommentsByPost(post, pageable)
 				.map(c -> {
 					CommentResponseDto transformed = Comment2CommentResponseDtoTransformer.transform(c);
-					transformed.setReactionsCount(commentService.findAllReactionCountsByComment(c));
+					transformed.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(c)));
+					transformed.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, c));
 
 					return transformed;
 				});
@@ -127,12 +140,12 @@ public class PostController {
 	}
 
 	@GetMapping("/posts/{postId}/reactions")
-	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostReactionResponseDto>>> findAllReactionsByPost(@PathVariable(name = "postId") UUID postPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
+	public ResponseEntity<RestApiResponseDto<PageResponseDto<PostReactionResponseDto>>> findAllReactionsByPost(@PathVariable(name = "postId") UUID postPublicId, @RequestParam(name = "reaction", required = false) Reaction reaction, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
 		Post post = postService.findPostByPublicId(postPublicId);
 
-		Page<PostReactionResponseDto> page = postService.findAllReactionsByPost(post, pageable)
+		Page<PostReactionResponseDto> page = postService.findAllReactionsByPost(post, reaction, pageable)
 				.map(PostReaction2PostReactionResponseDtoTransformer::transform);
 
 		PageResponseDto<PostReactionResponseDto> responseData = PageResponseDto.buildFromPage(page);
@@ -140,27 +153,25 @@ public class PostController {
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@PostMapping("/posts/{postId}/reactions")
-	public ResponseEntity<RestApiResponseDto<PostReactionResponseDto>> createReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionCreateRequestDto reactionCreateRequestDto) {
+	@PutMapping("/posts/{postId}/reactions")
+	public ResponseEntity<RestApiResponseDto<PostResponseDto>> toggleReactionOnPost(@PathVariable(name = "postId") UUID postPublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 		Post post = postService.findPostByPublicId(postPublicId);
 
-		PostReaction createdPostReaction = postService.addReactionToPost(post, currentUser, reactionCreateRequestDto.getReaction());
+		postService.toggleReactionOnPost(post, currentUser, reactionToggleRequestDto.getReaction());
 
-		PostReactionResponseDto responseData = PostReaction2PostReactionResponseDtoTransformer.transform(createdPostReaction);
+		PostResponseDto responseData = createPostResponseDtoFromPost(post, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
-	@DeleteMapping("/posts/{postId}/reactions/{reaction}")
-	public ResponseEntity<EmptyRestApiResponseDto> deleteReactionFromPost(@PathVariable(name = "postId") UUID postPublicId, @PathVariable(name = "reaction") Reaction reaction) {
-		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		User currentUser = userDetails.getUser();
-		Post post = postService.findPostByPublicId(postPublicId);
+	private PostResponseDto createPostResponseDtoFromPost(Post post, User currentUser) {
+		PostResponseDto postResponseDto = Post2PostResponseDtoTransformer.transform(post);
+		postResponseDto.setReactionsCount(new ArrayList<>(postService.findAllReactionCountsByPost(post)));
+		postResponseDto.setCommentsCount(postService.findCommentCountByPost(post));
+		postResponseDto.setCurrentUsersReaction(postService.getUsersReactionByPost(currentUser, post));
 
-		postService.deleteReactionFromPost(post, currentUser, reaction);
-
-		return ResponseEntity.ok(new EmptyRestApiResponseDto());
+		return postResponseDto;
 	}
 }

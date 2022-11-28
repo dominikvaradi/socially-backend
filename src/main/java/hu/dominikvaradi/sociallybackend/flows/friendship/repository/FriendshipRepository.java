@@ -27,8 +27,12 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 	@Query("select f from Friendship f where (f.requester = ?1 or f.addressee = ?1) and f.status = 'FRIENDSHIP_REQUEST_ACCEPTED'")
 	Set<Friendship> findAllAcceptedByUser(User user);
 
-	@Query("select f from Friendship f where (f.requester = ?1 or f.addressee = ?1) and f.status = 'FRIENDSHIP_REQUEST_ACCEPTED'")
-	Page<Friendship> findAllAcceptedByUser(User user, Pageable pageable);
+	@Query("select f from Friendship f where f.status = 'FRIENDSHIP_REQUEST_ACCEPTED' and " +
+			"((f.requester = ?1 and " +
+			"(upper(concat(f.addressee.firstName, ' ', f.addressee.lastName)) like upper(concat('%', ?2, '%')) or upper(concat(f.addressee.lastName, ' ', f.addressee.firstName)) like upper(concat('%', ?2, '%')))) " +
+			"or (f.addressee = ?1 and " +
+			"(upper(concat(f.requester.firstName, ' ', f.requester.lastName)) like upper(concat('%', ?2, '%')) or upper(concat(f.requester.lastName, ' ', f.requester.firstName)) like upper(concat('%', ?2, '%')))))")
+	Page<Friendship> findAllAcceptedByUserAndName(User user, String name, Pageable pageable);
 
 	@Modifying
 	@Query(value = "truncate table friendships restart identity cascade", nativeQuery = true)

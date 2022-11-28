@@ -5,7 +5,7 @@ import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.Conversati
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.dto.ConversationUserResponseDto;
 
 import java.time.ZoneId;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Conversation2ConversationResponseDtoTransformer {
@@ -14,10 +14,10 @@ public class Conversation2ConversationResponseDtoTransformer {
 	}
 
 	public static ConversationResponseDto transform(Conversation conversation) {
-		Set<ConversationUserResponseDto> members = conversation.getUserConversations()
+		List<ConversationUserResponseDto> members = conversation.getUserConversations()
 				.stream()
 				.map(UserConversation2ConversationUserResponseDtoTransformer::transform)
-				.collect(Collectors.toSet());
+				.collect(Collectors.toList());
 
 		return ConversationResponseDto.builder()
 				.id(conversation.getPublicId())

@@ -10,9 +10,9 @@ import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole.ADMIN;
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_REQUEST_ACCEPTED;
@@ -58,13 +58,13 @@ public class CustomMethodSecurityExpressionRoot extends SecurityExpressionRoot i
 		return friendship.isPresent() && friendship.get().getStatus() == FRIENDSHIP_REQUEST_ACCEPTED;
 	}
 
-	public boolean isAuthenticationUserFriendOfOtherUsers(Set<User> otherUsers) {
+	public boolean isAuthenticationUserFriendOfOtherUsers(Collection<User> otherUsers) {
 		User user = ((JwtUserDetails) this.getPrincipal()).getUser();
 
 		return isUserFriendOfOtherUsers(user, otherUsers);
 	}
 
-	public boolean isUserFriendOfOtherUsers(User user, Set<User> otherUsers) {
+	public boolean isUserFriendOfOtherUsers(User user, Collection<User> otherUsers) {
 		if (otherUsers.isEmpty()) {
 			return false;
 		}

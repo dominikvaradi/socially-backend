@@ -15,7 +15,9 @@ import java.util.Optional;
 public interface PostReactionRepository extends JpaRepository<PostReaction, Long> {
 	Page<PostReaction> findByPostOrderByUserLastNameAsc(Post post, Pageable pageable);
 
-	Optional<PostReaction> findByUserAndPostAndReaction(User user, Post post, Reaction reaction);
+	Page<PostReaction> findByPostAndReactionOrderByUserLastNameAsc(Post post, Reaction reaction, Pageable pageable);
+
+	Optional<PostReaction> findByUserAndPost(User user, Post post);
 
 	long countByPostAndReaction(Post post, Reaction reaction);
 
