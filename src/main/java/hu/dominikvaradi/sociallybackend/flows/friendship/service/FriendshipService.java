@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus.FRIENDSHIP_ENDED;
@@ -43,7 +44,7 @@ public class FriendshipService {
 		return friendshipRepository.findAllOutgoingByUserOrderByStatusLastModifiedDesc(user, pageable);
 	}
 
-	@PreAuthorize("#requesterUser == authentication.principal.user && isUserFriendOf(#requesterUser, #addresseeUser)")
+	@PreAuthorize("#requesterUser == authentication.principal.user && !isUserFriendOf(#requesterUser, #addresseeUser)")
 	public Friendship createFriendRequest(User requesterUser, User addresseeUser) {
 		if (Objects.equals(requesterUser, addresseeUser)) {
 			throw new EntityUnprocessableException("CANNOT_SEND_FRIEND_REQUEST_TO_SELF");
@@ -60,17 +61,28 @@ public class FriendshipService {
 
 		if (friendship.getStatus() == FRIENDSHIP_ENDED) {
 			friendship.setStatus(FRIENDSHIP_REQUEST_SENT);
-			friendship.setLastStatusModifier(addresseeUser);
+			friendship.setLastStatusModifier(requesterUser);
 			friendship.setStatusLastModified(Instant.now());
 		}
 
 		return friendshipRepository.save(friendship);
 	}
 
-	@PreAuthorize("#user == authentication.principal.user && #friendship.addressee == #user")
+	@PreAuthorize("#user == authentication.principal.user && (#friendship.requester == #user || #friendship.addressee == #user) && #friendship.lastStatusModifier != #user")
 	public Friendship acceptFriendRequest(Friendship friendship, User user) {
 		if (friendship.getStatus() == FRIENDSHIP_REQUEST_SENT) {
 			friendship.setStatus(FRIENDSHIP_REQUEST_ACCEPTED);
+			friendship.setLastStatusModifier(user);
+			friendship.setStatusLastModified(Instant.now());
+		}
+
+		return friendshipRepository.save(friendship);
+	}
+
+	@PreAuthorize("#user == authentication.principal.user && (#friendship.addressee == #user || #friendship.requester == #user)")
+	public Friendship deleteFriendship(Friendship friendship, User user) {
+		if (friendship.getStatus() == FRIENDSHIP_REQUEST_ACCEPTED) {
+			friendship.setStatus(FRIENDSHIP_ENDED);
 			friendship.setLastStatusModifier(user);
 			friendship.setStatusLastModified(Instant.now());
 		}
@@ -87,5 +99,10 @@ public class FriendshipService {
 		}
 
 		return friendshipRepository.save(friendship);
+	}
+
+	@PreAuthorize("authentication.principal.user == #user1 || authentication.principal.user == #user2")
+	public Optional<Friendship> findFriendshipBetweenUsers(User user1, User user2) {
+		return friendshipRepository.findByRequesterAndAddressee(user1, user2);
 	}
 }

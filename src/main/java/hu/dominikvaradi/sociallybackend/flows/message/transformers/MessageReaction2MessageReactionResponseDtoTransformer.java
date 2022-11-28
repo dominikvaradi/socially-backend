@@ -10,6 +10,7 @@ public class MessageReaction2MessageReactionResponseDtoTransformer {
 
 	public static MessageReactionResponseDto transform(MessageReaction messageReaction) {
 		return MessageReactionResponseDto.builder()
+				.id(messageReaction.getPublicId())
 				.messageId(messageReaction.getMessage().getPublicId())
 				.userId(messageReaction.getUser().getPublicId())
 				.userFirstName(messageReaction.getUser().getFirstName())

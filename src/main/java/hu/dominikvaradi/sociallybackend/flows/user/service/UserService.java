@@ -73,8 +73,8 @@ public class UserService {
 		return userRepository.findByNameContainsIgnoreCase(name, pageable);
 	}
 
-	public Page<User> findAllFriendsByUser(User user, Pageable pageable) {
-		return friendshipRepository.findAllAcceptedByUser(user, pageable)
+	public Page<User> findAllFriendsByUser(User user, String name, Pageable pageable) {
+		return friendshipRepository.findAllAcceptedByUserAndName(user, name, pageable)
 				.map(fs -> fs.getRequester().equals(user) ? fs.getAddressee() : fs.getRequester());
 	}
 

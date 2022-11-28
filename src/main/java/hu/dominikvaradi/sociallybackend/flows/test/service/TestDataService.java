@@ -34,6 +34,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction.ANGRY;
 import static hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction.FUNNY;
@@ -106,10 +108,6 @@ public class TestDataService {
 	private void createTestFriendshipData() {
 		List<Friendship> newFriendships = new ArrayList<>();
 
-		User rick = findUserByName("Rick Sanchez");
-		User morty = findUserByName("Morty Smith");
-		newFriendships.add(createFriendshipBetweenTwoUsers(rick, morty));
-
 		User eren = findUserByName("Eren Yaeger");
 		User mikasa = findUserByName("Mikasa Ackerman");
 		User levi = findUserByName("Levi Ackerman");
@@ -132,6 +130,25 @@ public class TestDataService {
 		User ryosuke = findUserByName("Ryosuke Takahashi");
 		User mako = findUserByName("Mako Sato");
 		newFriendships.addAll(createEveryPossibleFriendshipsBetweenUsers(takumi, ryosuke, mako));
+
+		User rick = findUserByName("Rick Sanchez");
+		User morty = findUserByName("Morty Smith");
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, eren));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, mikasa));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, levi));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, naruto));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, hinata));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, sakura));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, itachi));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, sasuke));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, tanjiro));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, nezuko));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, kanao));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, zenitsu));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, takumi));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, ryosuke));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, mako));
+		newFriendships.add(createFriendshipBetweenTwoUsers(rick, morty));
 
 		friendshipRepository.saveAll(newFriendships);
 	}
@@ -161,103 +178,102 @@ public class TestDataService {
 	private void createTestPostAndCommentData() {
 		List<Post> newPosts = new ArrayList<>();
 
-		User morty = findUserByName("Morty Smith");
-		User rick = findUserByName("Rick Sanchez");
-		User naruto = findUserByName("Naruto Uzumaki");
-		User hinata = findUserByName("Hinata Hyuga");
-		User sakura = findUserByName("Sakura Haruno");
-		User sasuke = findUserByName("Sasuke Uchiha");
-		User itachi = findUserByName("Itachi Uchiha");
-		User levi = findUserByName("Levi Ackerman");
-		User mikasa = findUserByName("Mikasa Ackerman");
-		User eren = findUserByName("Eren Yaeger");
-		User takumi = findUserByName("Takumi Fujiwara");
-		User ryosuke = findUserByName("Ryosuke Takahashi");
-		User mako = findUserByName("Mako Sato");
+		String shortContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+		String mediumContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+		String longContent = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur euismod libero vitae dui laoreet pretium. Fusce imperdiet, dui at cursus ullamcorper, est eros semper sem, at sodales ligula risus quis purus. Aenean eu lacinia felis. Phasellus at lorem nec lorem consectetur varius. Vestibulum ullamcorper lobortis facilisis. Nulla id vulputate ex, vel congue lectus. Proin in ligula at nunc auctor tincidunt eget ac neque. Aenean vel orci ornare, mattis quam aliquet, pellentesque velit. Morbi bibendum dolor vitae lacus tincidunt, nec rutrum arcu rutrum. Nulla facilisi. Pellentesque molestie magna ac magna lacinia faucibus. Donec cursus venenatis erat et viverra.\n" +
+				"\n" +
+				"Donec in mi commodo, rhoncus diam nec, aliquet sapien. Nunc convallis erat vitae efficitur sollicitudin. Aliquam id molestie mauris, vel elementum dolor. Proin elementum pretium vulputate. In ornare ex nunc, in faucibus risus accumsan in. Nam sed semper urna. Integer aliquam porttitor nulla, ut posuere orci aliquet sit amet. Quisque condimentum ut ipsum quis accumsan. Vivamus dignissim felis a nibh bibendum consequat. Mauris sed metus quis turpis venenatis consectetur eu sit amet eros. Donec condimentum, arcu sed pretium tincidunt, felis augue iaculis nunc, ut sagittis sem nisl eget lectus. Sed sollicitudin magna quis diam consectetur, non pellentesque sapien sollicitudin.\n" +
+				"\n" +
+				"Duis vestibulum justo at sem pellentesque congue. Nunc elementum scelerisque urna, et maximus nunc fringilla quis. Vivamus ultricies in mauris ut rutrum. Pellentesque finibus ornare ante, non efficitur ligula euismod ut. Ut efficitur nisi vitae ex scelerisque mattis. Curabitur rhoncus pulvinar neque. Suspendisse id eros id lacus egestas porta. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.";
 
-		Post postMorty = createPostForUser(morty, "I'm gonna kill Rick!", "So.. How do I say it?\n" +
-				"Yesterday Rick teleported me to an other dimension, where these Minecraft lookalike elephant creatures were chasing me like hell.\n" +
-				"I almost f*kin died out there, Rick you fool!");
-		addReactionToPost(rick, postMorty, FUNNY);
-		Comment commentRick = createCommentOnPost(rick, postMorty, "HAHHHAAA THATT WASS SOO FUNNYY");
-		addReactionToComment(morty, commentRick, ANGRY);
+		List<User> users = userRepository.findAll();
+		for (User user : users) {
+			List<User> friendsOfUser = friendshipRepository.findAllAcceptedByUser(user)
+					.stream()
+					.map(friendship -> (Objects.equals(user, friendship.getRequester())) ? friendship.getAddressee() : friendship.getRequester())
+					.collect(Collectors.toList());
 
-		Post postNaruto = createPostForUser(naruto, null, "I AM THE HOKAGE NOW!");
-		addReactionToPost(hinata, postNaruto, HEART);
-		addReactionToPost(sakura, postNaruto, HEART);
-		addReactionToPost(sasuke, postNaruto, LIKE);
-		addReactionToPost(itachi, postNaruto, LIKE);
-		Comment commentSasuke = createCommentOnPost(sasuke, postNaruto, "Well done, scaredy cat. :)");
-		addReactionToComment(naruto, commentSasuke, FUNNY);
-		addReactionToComment(sakura, commentSasuke, FUNNY);
-		Comment commentHinata = createCommentOnPost(hinata, postNaruto, "I'm so proud of you, my love! <3");
-		addReactionToComment(naruto, commentHinata, HEART);
 
-		Post postHinata1 = createPostForUser(hinata, "I love you, Naruto-kun!", "I'm in sooo much love with you, my dear Naruto-kun!\n" +
-				"I'm glad that you became hokage and reached your dreams, my love.\n");
-		addReactionToPost(naruto, postHinata1, HEART);
-		addReactionToPost(sakura, postHinata1, HEART);
+			final long postCount = ((user.getId() % 3) * 5) + ((user.getId() % 2) * 6);
+			for (int i = 0; i < postCount; ++i) {
+				String header = (i % 2 == 0) ? ("Post title #" + i) : null;
+				String content = shortContent;
+				if (i % 3 == 1) {
+					content = mediumContent;
+				} else if (i % 3 == 2) {
+					content = longContent;
+				}
 
-		Post postHinata2 = createPostForUser(hinata, "Wedding", "We're gonna celebrate our weeding with Naruto-kun next week, on Saturday, soo all citizen of Konoha will be invited!!");
-		addReactionToPost(naruto, postHinata2, HEART);
-		addReactionToPost(sakura, postHinata2, HEART);
-		addReactionToPost(sasuke, postHinata2, LIKE);
-		addReactionToPost(itachi, postHinata2, LIKE);
+				Post postByUser = Post.builder()
+						.header(header)
+						.content(content)
+						.author(user)
+						.addressee(user)
+						.build();
 
-		Post postLevi = createPostForUser(levi, null, "I am the strongest man in the world, so what's up?");
-		addReactionToPost(mikasa, postLevi, ANGRY);
-		addReactionToPost(eren, postLevi, ANGRY);
+				for (User friendOfUser : friendsOfUser) {
+					Reaction reaction;
+					switch ((int) (friendOfUser.getId() % 4)) {
+						case 1:
+							reaction = HEART;
+							break;
+						case 2:
+							reaction = FUNNY;
+							break;
+						case 3:
+							reaction = ANGRY;
+							break;
+						default:
+							reaction = LIKE;
+							break;
+					}
 
-		Post postTakumi = createPostForUser(takumi, "Pure drifting", "Yesterday I have made my most perfect drifting of all on Akina mt.\n" +
-				"Tomorrow i'll upload the footage of that sick sliding.");
-		addReactionToPost(ryosuke, postTakumi, LIKE);
-		addReactionToPost(mako, postTakumi, HEART);
-		createCommentOnPost(ryosuke, postTakumi, "Well done, trainee! ;)");
+					postByUser.getReactions().add(PostReaction.builder()
+							.user(friendOfUser)
+							.post(postByUser)
+							.reaction(reaction)
+							.build());
 
-		newPosts.add(postMorty);
-		newPosts.add(postNaruto);
-		newPosts.add(postHinata1);
-		newPosts.add(postHinata2);
-		newPosts.add(postLevi);
-		newPosts.add(postTakumi);
+					Comment createdCommentOnPost = Comment.builder()
+							.user(friendOfUser)
+							.post(postByUser)
+							.content(shortContent)
+							.build();
+
+					postByUser.getComments().add(createdCommentOnPost);
+				}
+
+				for (Comment commentByPost : postByUser.getComments()) {
+					for (User friendOfUser : friendsOfUser) {
+						Reaction reaction;
+						switch ((int) (friendOfUser.getId() % 4)) {
+							case 1:
+								reaction = HEART;
+								break;
+							case 2:
+								reaction = FUNNY;
+								break;
+							case 3:
+								reaction = ANGRY;
+								break;
+							default:
+								reaction = LIKE;
+								break;
+						}
+
+						commentByPost.getReactions().add(CommentReaction.builder()
+								.user(friendOfUser)
+								.comment(commentByPost)
+								.reaction(reaction)
+								.build());
+					}
+				}
+
+				newPosts.add(postByUser);
+			}
+		}
+
 		postRepository.saveAll(newPosts);
-	}
-
-	private Post createPostForUser(User user, String header, String content) {
-		return Post.builder()
-				.header(header)
-				.content(content)
-				.author(user)
-				.addressee(user)
-				.build();
-	}
-
-	private void addReactionToPost(User user, Post post, Reaction reaction) {
-		post.getReactions().add(PostReaction.builder()
-				.user(user)
-				.post(post)
-				.reaction(reaction)
-				.build());
-	}
-
-	private Comment createCommentOnPost(User user, Post post, String content) {
-		Comment createdComment = Comment.builder()
-				.user(user)
-				.post(post)
-				.content(content)
-				.build();
-
-		post.getComments().add(createdComment);
-
-		return createdComment;
-	}
-
-	private void addReactionToComment(User user, Comment comment, Reaction reaction) {
-		comment.getReactions().add(CommentReaction.builder()
-				.user(user)
-				.comment(comment)
-				.reaction(reaction)
-				.build());
 	}
 
 	private User findUserByName(String name) {

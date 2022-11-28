@@ -13,6 +13,9 @@ import java.util.UUID;
 @Setter
 public class MessageReactionResponseDto {
 	@NotNull
+	private UUID id;
+
+	@NotNull
 	private UUID messageId;
 
 	@NotNull

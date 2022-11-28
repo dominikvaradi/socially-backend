@@ -10,6 +10,7 @@ public class CommentReaction2CommentReactionResponseDto {
 
 	public static CommentReactionResponseDto transform(CommentReaction commentReaction) {
 		return CommentReactionResponseDto.builder()
+				.id(commentReaction.getPublicId())
 				.commentId(commentReaction.getComment().getPublicId())
 				.userId(commentReaction.getUser().getPublicId())
 				.userFirstName(commentReaction.getUser().getFirstName())

@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface CommentReactionRepository extends JpaRepository<CommentReaction, Long> {
 	Page<CommentReaction> findAllByCommentOrderByUserLastNameAsc(Comment comment, Pageable pageable);
 
+	Page<CommentReaction> findAllByCommentAndReactionOrderByUserLastNameAsc(Comment comment, Reaction reaction, Pageable pageable);
+
 	Optional<CommentReaction> findByUserAndComment(User user, Comment comment);
 
 	long countByCommentAndReaction(Comment comment, Reaction reaction);

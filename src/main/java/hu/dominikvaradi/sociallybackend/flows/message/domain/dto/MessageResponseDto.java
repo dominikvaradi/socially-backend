@@ -40,4 +40,7 @@ public class MessageResponseDto {
 	private List<ReactionCountResponseDto> reactionsCount;
 
 	private Reaction currentUsersReaction;
+
+	@NotNull
+	private boolean createdByCurrentUser;
 }

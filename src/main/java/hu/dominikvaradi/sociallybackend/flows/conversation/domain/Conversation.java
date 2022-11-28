@@ -41,7 +41,7 @@ public class Conversation extends BaseDomain {
 
 	@ToString.Exclude
 	@Builder.Default
-	@OneToMany(fetch = EAGER, mappedBy = "conversation", cascade = ALL)
+	@OneToMany(fetch = EAGER, mappedBy = "conversation", cascade = ALL, orphanRemoval = true)
 	private Set<UserConversation> userConversations = new java.util.LinkedHashSet<>();
 
 	@ToString.Exclude

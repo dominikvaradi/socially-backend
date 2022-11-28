@@ -68,7 +68,7 @@ public class PostService {
 
 		feedUsers.add(user);
 
-		return postRepository.findByAuthorOrUserIsInOrderByCreatedDesc(feedUsers, pageable);
+		return postRepository.findByAddresseeIsInOrderByCreatedDesc(feedUsers, pageable);
 	}
 
 	@PreAuthorize("authentication.principal.user == #post.author")
@@ -105,8 +105,12 @@ public class PostService {
 	}
 
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#post.addressee)")
-	public Page<PostReaction> findAllReactionsByPost(Post post, Pageable pageable) {
-		return postReactionRepository.findByPostOrderByUserLastNameAsc(post, pageable);
+	public Page<PostReaction> findAllReactionsByPost(Post post, Reaction reaction, Pageable pageable) {
+		if (reaction == null) {
+			return postReactionRepository.findByPostOrderByUserLastNameAsc(post, pageable);
+		}
+
+		return postReactionRepository.findByPostAndReactionOrderByUserLastNameAsc(post, reaction, pageable);
 	}
 
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#post.addressee)")

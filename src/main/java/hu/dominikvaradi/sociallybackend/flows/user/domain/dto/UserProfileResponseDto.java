@@ -1,5 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.user.domain.dto;
 
+import hu.dominikvaradi.sociallybackend.flows.friendship.domain.enums.FriendshipStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,4 +32,13 @@ public class UserProfileResponseDto {
 	private String currentCountry;
 
 	private String currentCity;
+
+	@NotNull
+	private boolean equalToCurrentUser;
+
+	private UUID friendshipId;
+
+	private FriendshipStatus friendshipStatusOfCurrentUser;
+
+	private boolean friendshipStatusLastModifierEqualToCurrentUser;
 }

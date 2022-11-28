@@ -17,8 +17,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
 	Page<Post> findByAddresseeOrderByCreatedDesc(User user, Pageable pageable);
 
-	@Query("select p from Post p where p.author in ?1 or p.addressee in ?1 order by p.created DESC")
-	Page<Post> findByAuthorOrUserIsInOrderByCreatedDesc(Collection<User> users, Pageable pageable);
+	Page<Post> findByAddresseeIsInOrderByCreatedDesc(Collection<User> users, Pageable pageable);
 
 	@Modifying
 	@Query(value = "truncate table posts restart identity cascade", nativeQuery = true)

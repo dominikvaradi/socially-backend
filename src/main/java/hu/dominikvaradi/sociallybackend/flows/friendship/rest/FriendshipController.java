@@ -1,5 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.friendship.rest;
 
+import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.EmptyRestApiResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
@@ -117,5 +118,16 @@ public class FriendshipController {
 		FriendRequestOutgoingResponseDto responseData = Friendship2FriendRequestOutgoingResponseDtoTransformer.transform(revokedFriendship, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
+	}
+
+	@DeleteMapping("/friendships/existing/{friendshipId}")
+	public ResponseEntity<EmptyRestApiResponseDto> deleteFriendship(@PathVariable(name = "friendshipId") UUID friendshipPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
+		Friendship friendship = friendshipService.findByPublicId(friendshipPublicId);
+
+		friendshipService.deleteFriendship(friendship, currentUser);
+
+		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 }

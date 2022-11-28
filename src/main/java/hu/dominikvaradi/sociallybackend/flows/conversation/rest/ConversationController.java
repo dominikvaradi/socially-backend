@@ -39,9 +39,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SecurityRequirement(name = "BearerToken")
 @RequiredArgsConstructor
@@ -71,9 +72,9 @@ public class ConversationController {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 
-		Set<User> otherUsers = userService.findAllUsersByPublicIds(conversationCreateRequestDto.getMemberUserIds());
+		Set<User> otherUsers = userService.findAllUsersByPublicIds(new HashSet<>(conversationCreateRequestDto.getMemberUserIds()));
 
-		Conversation createdConversation = conversationService.createConversation(currentUser, conversationCreateRequestDto.getType(), otherUsers);
+		Conversation createdConversation = conversationService.createConversation(currentUser, otherUsers);
 
 		ConversationResponseDto responseData = Conversation2ConversationResponseDtoTransformer.transform(createdConversation);
 
@@ -90,35 +91,38 @@ public class ConversationController {
 	}
 
 	@PutMapping("/conversations/{conversationId}/users")
-	public ResponseEntity<RestApiResponseDto<Set<ConversationUserResponseDto>>> addUsersToConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody ConversationAddUsersRequestDto conversationAddUsersRequestDto) {
+	public ResponseEntity<RestApiResponseDto<ConversationResponseDto>> addUsersToConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @RequestBody ConversationAddUsersRequestDto conversationAddUsersRequestDto) {
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 
-		Set<User> otherUsers = userService.findAllUsersByPublicIds(conversationAddUsersRequestDto.getMemberUserIds());
+		Set<User> otherUsers = userService.findAllUsersByPublicIds(new HashSet<>(conversationAddUsersRequestDto.getMemberUserIds()));
 
-		Set<ConversationUserResponseDto> responseData = conversationService.addUsersToConversation(conversation, otherUsers)
-				.stream()
-				.map(UserConversation2ConversationUserResponseDtoTransformer::transform)
-				.collect(Collectors.toSet());
+		Conversation updatedConversation = conversationService.addUsersToConversation(conversation, otherUsers);
+
+		ConversationResponseDto responseData = Conversation2ConversationResponseDtoTransformer.transform(updatedConversation);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
 
 	@DeleteMapping("/conversations/{conversationId}/users/{userId}")
 	public ResponseEntity<EmptyRestApiResponseDto> removeUserFromConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 		User user = userService.findUserByPublicId(userPublicId);
 
-		conversationService.removeUserFromConversation(conversation, user);
+		conversationService.removeUserFromConversation(conversation, currentUser, user);
 
 		return ResponseEntity.ok(new EmptyRestApiResponseDto());
 	}
 
 	@PutMapping("/conversations/{conversationId}/users/{userId}/role")
-	public ResponseEntity<RestApiResponseDto<ConversationUserResponseDto>> updateUsersRoleInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId, ConversationChangeUserRoleRequestDto conversationChangeUserRoleRequestDto) {
+	public ResponseEntity<RestApiResponseDto<ConversationUserResponseDto>> updateUsersRoleInConversation(@PathVariable(name = "conversationId") UUID conversationPublicId, @PathVariable(name = "userId") UUID userPublicId, @RequestBody ConversationChangeUserRoleRequestDto conversationChangeUserRoleRequestDto) {
+		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User currentUser = userDetails.getUser();
 		Conversation conversation = conversationService.findConversationByPublicId(conversationPublicId);
 		User user = userService.findUserByPublicId(userPublicId);
 
-		UserConversation updatedUserConversation = conversationService.changeUserRoleInConversation(conversation, user, conversationChangeUserRoleRequestDto.getRole());
+		UserConversation updatedUserConversation = conversationService.changeUserRoleInConversation(conversation, currentUser, user, conversationChangeUserRoleRequestDto.getRole());
 
 		ConversationUserResponseDto responseData = UserConversation2ConversationUserResponseDtoTransformer.transform(updatedUserConversation);
 
@@ -138,6 +142,7 @@ public class ConversationController {
 					MessageResponseDto transformed = Message2MessageResponseDtoTransformer.transform(m);
 					transformed.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(m)));
 					transformed.setCurrentUsersReaction(messageService.getUsersReactionByMessage(currentUser, m));
+					transformed.setCreatedByCurrentUser(Objects.equals(currentUser, m.getUser()));
 
 					return transformed;
 				});
@@ -156,6 +161,7 @@ public class ConversationController {
 		Message createdMessage = messageService.createMessage(conversation, currentUser, messageCreateRequestDto);
 
 		MessageResponseDto responseData = Message2MessageResponseDtoTransformer.transform(createdMessage);
+		responseData.setCreatedByCurrentUser(true);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}

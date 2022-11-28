@@ -86,8 +86,13 @@ public class MessageService {
 	}
 
 	@PreAuthorize("isAuthenticationUserMemberOfConversation(#message.conversation)")
-	public Page<MessageReaction> findAllReactionsByMessage(Message message, Pageable pageable) {
-		return messageReactionRepository.findAllByMessageOrderByUserLastNameAsc(message, pageable);
+	public Page<MessageReaction> findAllReactionsByMessage(Message message, Reaction reaction, Pageable pageable) {
+		if (reaction == null) {
+			return messageReactionRepository.findAllByMessageOrderByUserLastNameAsc(message, pageable);
+		}
+		
+		return messageReactionRepository.findAllByMessageAndReactionOrderByUserLastNameAsc(message, reaction, pageable);
+
 	}
 
 	@PreAuthorize("isAuthenticationUserMemberOfConversation(#message.conversation)")

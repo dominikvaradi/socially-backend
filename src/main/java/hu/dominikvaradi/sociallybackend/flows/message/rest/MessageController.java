@@ -5,8 +5,8 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionToggleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.Message;
-import hu.dominikvaradi.sociallybackend.flows.message.domain.MessageReaction;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageReactionResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.message.domain.dto.MessageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.message.service.MessageService;
@@ -27,9 +27,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.UUID;
 
 @SecurityRequirement(name = "BearerToken")
@@ -44,9 +46,7 @@ public class MessageController {
 		User currentUser = userDetails.getUser();
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
-		MessageResponseDto responseData = Message2MessageResponseDtoTransformer.transform(message);
-		responseData.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(message)));
-		responseData.setCurrentUsersReaction(messageService.getUsersReactionByMessage(currentUser, message));
+		MessageResponseDto responseData = createMessageResponseDtoFromMessage(message, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -61,12 +61,12 @@ public class MessageController {
 	}
 
 	@GetMapping("/messages/{messageId}/reactions")
-	public ResponseEntity<RestApiResponseDto<PageResponseDto<MessageReactionResponseDto>>> findAllReactionsByMessage(@PathVariable(name = "messageId") UUID messagePublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
+	public ResponseEntity<RestApiResponseDto<PageResponseDto<MessageReactionResponseDto>>> findAllReactionsByMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestParam(name = "reaction", required = false) Reaction reaction, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
-		Page<MessageReactionResponseDto> page = messageService.findAllReactionsByMessage(message, pageable)
+		Page<MessageReactionResponseDto> page = messageService.findAllReactionsByMessage(message, reaction, pageable)
 				.map(MessageReaction2MessageReactionResponseDtoTransformer::transform);
 
 		PageResponseDto<MessageReactionResponseDto> responseData = PageResponseDto.buildFromPage(page);
@@ -75,15 +75,24 @@ public class MessageController {
 	}
 
 	@PutMapping("/messages/{messageId}/reactions")
-	public ResponseEntity<RestApiResponseDto<MessageReactionResponseDto>> toggleReactionOnMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
+	public ResponseEntity<RestApiResponseDto<MessageResponseDto>> toggleReactionOnMessage(@PathVariable(name = "messageId") UUID messagePublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 		Message message = messageService.findMessageByPublicId(messagePublicId);
 
-		MessageReaction updatedMessageReaction = messageService.toggleReactionOnMessage(message, currentUser, reactionToggleRequestDto.getReaction());
+		messageService.toggleReactionOnMessage(message, currentUser, reactionToggleRequestDto.getReaction());
 
-		MessageReactionResponseDto responseData = updatedMessageReaction == null ? null : MessageReaction2MessageReactionResponseDtoTransformer.transform(updatedMessageReaction);
+		MessageResponseDto responseData = createMessageResponseDtoFromMessage(message, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
+	}
+
+	private MessageResponseDto createMessageResponseDtoFromMessage(Message message, User currentUser) {
+		MessageResponseDto messageResponseDto = Message2MessageResponseDtoTransformer.transform(message);
+		messageResponseDto.setReactionsCount(new ArrayList<>(messageService.findAllReactionCountsByMessage(message)));
+		messageResponseDto.setCurrentUsersReaction(messageService.getUsersReactionByMessage(currentUser, message));
+		messageResponseDto.setCreatedByCurrentUser(Objects.equals(currentUser, message.getUser()));
+
+		return messageResponseDto;
 	}
 }

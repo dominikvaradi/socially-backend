@@ -30,7 +30,7 @@ import java.util.Objects;
 @Table(name = "users_conversations")
 public class UserConversation implements Serializable {
 	@EmbeddedId
-	private UserConversationKey id;
+	private UserConversationKey id = new UserConversationKey();
 
 	@ManyToOne
 	@MapsId("userId")

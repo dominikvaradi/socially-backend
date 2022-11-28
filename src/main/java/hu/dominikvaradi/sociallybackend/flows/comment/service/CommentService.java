@@ -37,7 +37,7 @@ public class CommentService {
 				.orElseThrow(() -> new EntityNotFoundException("COMMENT_NOT_FOUND"));
 	}
 
-	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #post.addressee)")
+	@PreAuthorize("authentication.principal.user == #user && isUserEqualsOrFriendOf(#user, #post.addressee)")
 	public Comment createComment(Post post, User user, CommentCreateRequestDto commentCreateRequestDto) {
 		Comment newComment = Comment.builder()
 				.content(commentCreateRequestDto.getContent())
@@ -65,7 +65,7 @@ public class CommentService {
 		commentRepository.delete(comment);
 	}
 
-	@PreAuthorize("authentication.principal.user == user && isUserEqualsOrFriendOf(#user, #comment.post.addressee)")
+	@PreAuthorize("authentication.principal.user == #user && isUserEqualsOrFriendOf(#user, #comment.post.addressee)")
 	public CommentReaction toggleReactionOnComment(Comment comment, User user, Reaction reaction) {
 		Optional<CommentReaction> existingCommentReaction = commentReactionRepository.findByUserAndComment(user, comment);
 		if (existingCommentReaction.isPresent()) {
@@ -86,8 +86,12 @@ public class CommentService {
 	}
 
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
-	public Page<CommentReaction> findAllReactionsByComment(Comment comment, Pageable pageable) {
-		return commentReactionRepository.findAllByCommentOrderByUserLastNameAsc(comment, pageable);
+	public Page<CommentReaction> findAllReactionsByComment(Comment comment, Reaction reaction, Pageable pageable) {
+		if (reaction == null) {
+			return commentReactionRepository.findAllByCommentOrderByUserLastNameAsc(comment, pageable);
+		}
+
+		return commentReactionRepository.findAllByCommentAndReactionOrderByUserLastNameAsc(comment, reaction, pageable);
 	}
 
 	@PreAuthorize("isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
@@ -104,7 +108,7 @@ public class CommentService {
 		return reactionCounts;
 	}
 
-	@PreAuthorize("authentication.principal.user == user && isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
+	@PreAuthorize("authentication.principal.user == #user && isAuthenticationUserEqualsOrFriendOf(#comment.post.addressee)")
 	public Reaction getUsersReactionByComment(User user, Comment comment) {
 		Optional<CommentReaction> commentReaction = commentReactionRepository.findByUserAndComment(user, comment);
 		if (commentReaction.isEmpty()) {

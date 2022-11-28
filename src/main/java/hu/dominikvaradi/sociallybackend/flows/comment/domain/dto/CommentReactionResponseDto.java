@@ -13,6 +13,9 @@ import java.util.UUID;
 @Setter
 public class CommentReactionResponseDto {
 	@NotNull
+	private UUID id;
+
+	@NotNull
 	private UUID commentId;
 
 	@NotNull

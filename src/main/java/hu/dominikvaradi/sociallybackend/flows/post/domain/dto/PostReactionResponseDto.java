@@ -13,6 +13,9 @@ import java.util.UUID;
 @Setter
 public class PostReactionResponseDto {
 	@NotNull
+	private UUID id;
+
+	@NotNull
 	private UUID postId;
 
 	@NotNull

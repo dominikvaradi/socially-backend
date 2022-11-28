@@ -10,6 +10,7 @@ public class PostReaction2PostReactionResponseDtoTransformer {
 
 	public static PostReactionResponseDto transform(PostReaction postReaction) {
 		return PostReactionResponseDto.builder()
+				.id(postReaction.getPublicId())
 				.postId(postReaction.getPost().getPublicId())
 				.userId(postReaction.getUser().getPublicId())
 				.userFirstName(postReaction.getUser().getFirstName())

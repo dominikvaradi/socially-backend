@@ -1,7 +1,6 @@
 package hu.dominikvaradi.sociallybackend.flows.comment.rest;
 
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.Comment;
-import hu.dominikvaradi.sociallybackend.flows.comment.domain.CommentReaction;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentReactionResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.comment.domain.dto.CommentUpdateRequestDto;
@@ -13,6 +12,7 @@ import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageResponseDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.PageableRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.ReactionToggleRequestDto;
 import hu.dominikvaradi.sociallybackend.flows.common.domain.dto.RestApiResponseDto;
+import hu.dominikvaradi.sociallybackend.flows.common.domain.enums.Reaction;
 import hu.dominikvaradi.sociallybackend.flows.security.domain.JwtUserDetails;
 import hu.dominikvaradi.sociallybackend.flows.user.domain.User;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -45,9 +46,7 @@ public class CommentController {
 		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
-		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(comment);
-		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(comment)));
-		responseData.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, comment));
+		CommentResponseDto responseData = createCommentResponseDtoFromComment(comment, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -60,9 +59,7 @@ public class CommentController {
 
 		Comment updatedComment = commentService.updateComment(comment, commentUpdateRequestDto);
 
-		CommentResponseDto responseData = Comment2CommentResponseDtoTransformer.transform(updatedComment);
-		responseData.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(updatedComment)));
-		responseData.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, updatedComment));
+		CommentResponseDto responseData = createCommentResponseDtoFromComment(updatedComment, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
 	}
@@ -77,12 +74,12 @@ public class CommentController {
 	}
 
 	@GetMapping("/comments/{commentId}/reactions")
-	public ResponseEntity<RestApiResponseDto<PageResponseDto<CommentReactionResponseDto>>> findAllReactionsByComment(@PathVariable(name = "commentId") UUID commentPublicId, @ParameterObject PageableRequestDto pageableRequestDto) {
+	public ResponseEntity<RestApiResponseDto<PageResponseDto<CommentReactionResponseDto>>> findAllReactionsByComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestParam(name = "reaction", required = false) Reaction reaction, @ParameterObject PageableRequestDto pageableRequestDto) {
 		Pageable pageable = PageRequest.of(pageableRequestDto.getPage(), pageableRequestDto.getSize());
 
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
-		Page<CommentReactionResponseDto> page = commentService.findAllReactionsByComment(comment, pageable)
+		Page<CommentReactionResponseDto> page = commentService.findAllReactionsByComment(comment, reaction, pageable)
 				.map(CommentReaction2CommentReactionResponseDto::transform);
 
 		PageResponseDto<CommentReactionResponseDto> responseData = PageResponseDto.buildFromPage(page);
@@ -91,15 +88,23 @@ public class CommentController {
 	}
 
 	@PutMapping("/comments/{commentId}/reactions")
-	public ResponseEntity<RestApiResponseDto<CommentReactionResponseDto>> toggleReactionOnComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
+	public ResponseEntity<RestApiResponseDto<CommentResponseDto>> toggleReactionOnComment(@PathVariable(name = "commentId") UUID commentPublicId, @RequestBody ReactionToggleRequestDto reactionToggleRequestDto) {
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
 		Comment comment = commentService.findCommentByPublicId(commentPublicId);
 
-		CommentReaction updatedCommentReaction = commentService.toggleReactionOnComment(comment, currentUser, reactionToggleRequestDto.getReaction());
+		commentService.toggleReactionOnComment(comment, currentUser, reactionToggleRequestDto.getReaction());
 
-		CommentReactionResponseDto responseData = updatedCommentReaction == null ? null : CommentReaction2CommentReactionResponseDto.transform(updatedCommentReaction);
+		CommentResponseDto responseData = createCommentResponseDtoFromComment(comment, currentUser);
 
 		return ResponseEntity.ok(RestApiResponseDto.buildFromDataWithoutMessages(responseData));
+	}
+
+	private CommentResponseDto createCommentResponseDtoFromComment(Comment comment, User currentUser) {
+		CommentResponseDto commentResponseDto = Comment2CommentResponseDtoTransformer.transform(comment);
+		commentResponseDto.setReactionsCount(new ArrayList<>(commentService.findAllReactionCountsByComment(comment)));
+		commentResponseDto.setCurrentUsersReaction(commentService.getUsersReactionByComment(currentUser, comment));
+
+		return commentResponseDto;
 	}
 }

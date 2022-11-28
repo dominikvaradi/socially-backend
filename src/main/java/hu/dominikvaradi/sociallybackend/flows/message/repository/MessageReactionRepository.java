@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface MessageReactionRepository extends JpaRepository<MessageReaction, Long> {
 	Page<MessageReaction> findAllByMessageOrderByUserLastNameAsc(Message message, Pageable pageable);
 
+	Page<MessageReaction> findAllByMessageAndReactionOrderByUserLastNameAsc(Message message, Reaction reaction, Pageable pageable);
+
 	Optional<MessageReaction> findByUserAndMessage(User user, Message message);
 
 	long countByMessageAndReaction(Message message, Reaction reaction);

@@ -1,11 +1,9 @@
 package hu.dominikvaradi.sociallybackend.flows.conversation.service;
 
-import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityConflictException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityNotFoundException;
 import hu.dominikvaradi.sociallybackend.flows.common.exception.EntityUnprocessableException;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.Conversation;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.UserConversation;
-import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType;
 import hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.ConversationRepository;
 import hu.dominikvaradi.sociallybackend.flows.conversation.repository.UserConversationRepository;
@@ -18,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType.DIRECT;
+import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.ConversationType.GROUP;
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole.ADMIN;
 import static hu.dominikvaradi.sociallybackend.flows.conversation.domain.enums.UserConversationRole.NORMAL;
 
@@ -36,37 +36,39 @@ public class ConversationService {
 	private final ConversationRepository conversationRepository;
 	private final UserConversationRepository userConversationRepository;
 
-	@PreAuthorize("authentication.principal.requesterUser == #requesterUser && isUserFriendOfOtherUsers(#requesterUser, #otherUsers)")
-	public Conversation createConversation(User requesterUser, ConversationType type, Set<User> otherUsers) {
-		Conversation conversation = Conversation.builder()
-				.type(type)
-				.build();
+	@PreAuthorize("authentication.principal.user == #requesterUser && isAuthenticationUserFriendOfOtherUsers(#otherUsers)")
+	public Conversation createConversation(User requesterUser, Set<User> otherUsers) {
+		Conversation conversation = new Conversation();
 
 		if (otherUsers.contains(requesterUser)) {
 			throw new EntityUnprocessableException("REQUESTER_USER_CANNOT_BE_IN_MEMBERS_ARRAY");
 		}
 
-		if (type == DIRECT) {
-			if (otherUsers.size() != 1) {
-				throw new EntityUnprocessableException("DIRECT_CONVERSATIONS_MUST_CONTAIN_ONLY_ONE_ELEMENT_IN_MEMBERS_ARRAY");
-			}
-
+		if (otherUsers.size() == 1) {
 			User otherUser = otherUsers.stream().iterator().next();
 			Optional<Conversation> conversationBetweenTheUsers = findDirectConversationByUsers(requesterUser, otherUser);
 			if (conversationBetweenTheUsers.isPresent()) {
-				throw new EntityConflictException("REQUESTER_USER_AND_OTHER_USER_ALREADY_HAVE_CONVERSATION");
+				return conversationBetweenTheUsers.get();
 			}
+
+			conversation.setType(DIRECT);
+		} else {
+			conversation.setType(GROUP);
 		}
 
+		conversation.setLastMessageSent(Instant.now());
+
+		Conversation createdConversation = conversationRepository.save(conversation);
+
 		Set<UserConversation> userConversations = otherUsers.stream()
-				.map(u -> createUserConversation(u, conversation, NORMAL))
+				.map(u -> createUserConversation(u, createdConversation, NORMAL))
 				.collect(Collectors.toSet());
 
-		userConversations.add(createUserConversation(requesterUser, conversation, type == DIRECT ? NORMAL : ADMIN));
+		userConversations.add(createUserConversation(requesterUser, createdConversation, conversation.getType() == DIRECT ? NORMAL : ADMIN));
 
-		conversation.setUserConversations(userConversations);
+		createdConversation.setUserConversations(userConversations);
 
-		return conversationRepository.save(conversation);
+		return conversationRepository.save(createdConversation);
 	}
 
 	@PostAuthorize("isAuthenticationUserMemberOfConversation(returnObject)")
@@ -76,7 +78,7 @@ public class ConversationService {
 	}
 
 	@PreAuthorize("isAuthenticationUserAdminOfConversation(#conversation) && isAuthenticationUserFriendOfOtherUsers(#users)")
-	public List<UserConversation> addUsersToConversation(Conversation conversation, Set<User> users) {
+	public Conversation addUsersToConversation(Conversation conversation, Set<User> users) {
 		if (conversation.getType() == DIRECT) {
 			throw new EntityUnprocessableException("DIRECT_CONVERSATIONS_CANNOT_BE_EXPANDED");
 		}
@@ -88,11 +90,11 @@ public class ConversationService {
 
 		conversation.getUserConversations().addAll(userConversations);
 
-		return userConversationRepository.saveAll(userConversations);
+		return conversationRepository.save(conversation);
 	}
 
-	@PreAuthorize("isAuthenticationUserAdminOfConversation(#conversation)")
-	public void removeUserFromConversation(Conversation conversation, User user) {
+	@PreAuthorize("authentication.principal.user == #currentUser && isAuthenticationUserAdminOfConversation(#conversation)")
+	public void removeUserFromConversation(Conversation conversation, User currentUser, User user) {
 		UserConversation userConversation = findUserConversationInConversationByUser(user, conversation)
 				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND_IN_CONVERSATION"));
 
@@ -100,19 +102,27 @@ public class ConversationService {
 				.filter(uc -> uc.getUserRole() == ADMIN)
 				.count();
 
-		if (adminCount == 1) {
+		if (adminCount == 1 && Objects.equals(currentUser, user)) {
 			throw new EntityUnprocessableException("CONVERSATIONS_MUST_HAVE_AN_ADMIN");
 		}
 
 		conversation.getUserConversations().remove(userConversation);
 
-		userConversationRepository.save(userConversation);
+		conversationRepository.save(conversation);
 	}
 
-	@PreAuthorize("isAuthenticationUserAdminOfConversation(#conversation)")
-	public UserConversation changeUserRoleInConversation(Conversation conversation, User user, UserConversationRole role) {
+	@PreAuthorize("authentication.principal.user == #currentUser && isAuthenticationUserAdminOfConversation(#conversation)")
+	public UserConversation changeUserRoleInConversation(Conversation conversation, User currentUser, User user, UserConversationRole role) {
 		UserConversation userConversation = findUserConversationInConversationByUser(user, conversation)
 				.orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND_IN_CONVERSATION"));
+
+		long adminCount = conversation.getUserConversations().stream()
+				.filter(uc -> uc.getUserRole() == ADMIN)
+				.count();
+
+		if (adminCount == 1 && Objects.equals(currentUser, user)) {
+			throw new EntityUnprocessableException("CONVERSATIONS_MUST_HAVE_AN_ADMIN");
+		}
 
 		userConversation.setUserRole(role);
 
