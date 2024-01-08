@@ -13,12 +13,15 @@ import org.hibernate.Hibernate;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapsId;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Objects;
+
+import static javax.persistence.EnumType.STRING;
 
 @Builder
 @Getter
@@ -42,6 +45,7 @@ public class UserConversation implements Serializable {
 	@JoinColumn(name = "conversation_id")
 	private Conversation conversation;
 
+	@Enumerated(STRING)
 	@Column(name = "user_role")
 	private UserConversationRole userRole;
 

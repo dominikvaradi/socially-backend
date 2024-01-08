@@ -85,7 +85,7 @@ public class FriendshipController {
 
 		JwtUserDetails userDetails = (JwtUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User currentUser = userDetails.getUser();
-
+		
 		Page<FriendRequestOutgoingResponseDto> page = friendshipService.findAllOutgoingFriendRequestsOfUser(currentUser, pageable)
 				.map((fs -> Friendship2FriendRequestOutgoingResponseDtoTransformer.transform(fs, currentUser)));
 
