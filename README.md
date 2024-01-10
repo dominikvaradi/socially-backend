@@ -20,6 +20,16 @@ Alternatively you can use the [Spring Boot Maven plugin](https://docs.spring.io/
 mvn spring-boot:run
 ```
 
+## Environment Variables
+
+| ENVIRONMENT VARIABLE          | Description                                                         |
+|-------------------------------|---------------------------------------------------------------------|
+| **DATABASE_URL**              | The URL of the database. (string)                                   |
+| **DATABASE_USERNAME**         | The username of the database user. (string)                         |
+| **DATABASE_PASSWORD**         | The password of the database user. (string)                         |
+| **TESTING_ENDPOINTS_ENABLED** | Whether the testing endpoints are enabled or not. (boolean)         |
+| **JWT_SECRET_IN_BASE64**      | The secret used for JWT token generation. (base64 formatted string) |
+
 ## Endpoint documentation
 
 There is an openapi generation configured in Spring, which you can download from [http://localhost:8080/api-docs](http://localhost:8080/api-docs) if you are running the application.
@@ -28,7 +38,7 @@ You can see the REST Api documentation via Swagger UI, on [http://localhost:8080
 
 ## Test data generation
 
-You can enable test data generation endpoint inside `application.yaml`
+You can enable test data generation endpoint by changing the `testing-TESTING_ENDPOINTS_ENABLED-enabled` environment variable, or edit `application.yaml` locally:
 
 ```
 application:
