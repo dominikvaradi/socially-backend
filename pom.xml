@@ -5,7 +5,7 @@
 
     <groupId>hu.dominikvaradi</groupId>
     <artifactId>socially-backend</artifactId>
-    <version>0.2.0</version>
+    <version>0.0.1</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -16,8 +16,6 @@
 
     <properties>
         <java.version>11</java.version>
-        <sonar.organization>dominikvaradi</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencies>
@@ -114,12 +112,8 @@
                     </excludes>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-maven-plugin</artifactId>
-            </plugin>
         </plugins>
+        <finalName>spring-boot-application</finalName>
     </build>
 
 </project>
